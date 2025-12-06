@@ -12,22 +12,34 @@ const ClinicClock = () => {
         return () => clearInterval(timer);
     }, []);
 
-    const isOpen = () => {
+    const getStatus = () => {
         try {
-            const { workingHoursStart, workingHoursEnd } = state.clinicSettings;
-            if (!workingHoursStart || !workingHoursEnd) return false;
+            const { workingHoursStart, workingHoursEnd, breakStart, breakEnd } = state.clinicSettings;
+            if (!workingHoursStart || !workingHoursEnd) return { status: 'CLOSED', color: 'danger' };
 
             const now = currentTime;
             const start = parse(workingHoursStart, 'HH:mm', now);
             const end = parse(workingHoursEnd, 'HH:mm', now);
 
-            return isWithinInterval(now, { start, end });
+            if (!isWithinInterval(now, { start, end })) {
+                return { status: 'CLOSED', color: 'danger' };
+            }
+
+            if (breakStart && breakEnd) {
+                const bStart = parse(breakStart, 'HH:mm', now);
+                const bEnd = parse(breakEnd, 'HH:mm', now);
+                if (isWithinInterval(now, { start: bStart, end: bEnd })) {
+                    return { status: 'ON BREAK', color: 'warning' };
+                }
+            }
+
+            return { status: 'OPEN', color: 'success' };
         } catch (error) {
-            return false;
+            return { status: 'CLOSED', color: 'danger' };
         }
     };
 
-    const openStatus = isOpen();
+    const { status, color } = getStatus();
 
     return (
         <div style={{
@@ -49,11 +61,11 @@ const ClinicClock = () => {
                     padding: '2px 8px',
                     borderRadius: '12px',
                     fontWeight: 600,
-                    background: openStatus ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    color: openStatus ? 'hsl(var(--success))' : 'hsl(var(--danger))',
-                    border: `1px solid ${openStatus ? 'hsl(var(--success))' : 'hsl(var(--danger))'}`
+                    background: `hsl(var(--${color}) / 0.1)`,
+                    color: `hsl(var(--${color}))`,
+                    border: `1px solid hsl(var(--${color}))`
                 }}>
-                    {openStatus ? 'OPEN' : 'CLOSED'}
+                    {status}
                 </span>
             </div>
 

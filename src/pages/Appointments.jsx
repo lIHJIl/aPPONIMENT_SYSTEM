@@ -41,6 +41,18 @@ const Appointments = () => {
             return;
         }
 
+        const { breakStart, breakEnd } = state.clinicSettings;
+        if (breakStart && breakEnd) {
+            const appointmentTime = parse(format(selectedDate, 'HH:mm'), 'HH:mm', new Date());
+            const bStart = parse(breakStart, 'HH:mm', new Date());
+            const bEnd = parse(breakEnd, 'HH:mm', new Date());
+
+            if (isWithinInterval(appointmentTime, { start: bStart, end: bEnd })) {
+                alert(`Cannot book during break hours (${breakStart} - ${breakEnd}).`);
+                return;
+            }
+        }
+
         if (!checkAvailability(formData.doctorId, formData.date)) {
             alert('Doctor is not available at this time (30 min slot conflict).');
             return;

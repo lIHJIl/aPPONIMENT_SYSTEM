@@ -135,12 +135,12 @@ app.get('/api/settings', (req, res) => {
 });
 
 app.put('/api/settings', (req, res) => {
-    const { name, workingHoursStart, workingHoursEnd } = req.body;
-    db.run(`UPDATE settings SET name = ?, workingHoursStart = ?, workingHoursEnd = ? WHERE id = 1`,
-        [name, workingHoursStart, workingHoursEnd],
+    const { name, workingHoursStart, workingHoursEnd, breakStart, breakEnd } = req.body;
+    db.run(`UPDATE settings SET name = ?, workingHoursStart = ?, workingHoursEnd = ?, breakStart = ?, breakEnd = ? WHERE id = 1`,
+        [name, workingHoursStart, workingHoursEnd, breakStart, breakEnd],
         function (err) {
             if (err) return res.status(500).json({ error: err.message });
-            res.json({ name, workingHoursStart, workingHoursEnd });
+            res.json({ name, workingHoursStart, workingHoursEnd, breakStart, breakEnd });
         }
     );
 });

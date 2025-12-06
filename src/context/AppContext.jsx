@@ -11,7 +11,9 @@ const initialState = {
     clinicSettings: {
         name: 'MediCare Clinic',
         workingHoursStart: '09:00',
-        workingHoursEnd: '17:00'
+        workingHoursEnd: '17:00',
+        breakStart: '13:00',
+        breakEnd: '14:00'
     }
 };
 

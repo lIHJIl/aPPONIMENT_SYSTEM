@@ -49,14 +49,20 @@ const initDb = () => {
             id INTEGER PRIMARY KEY CHECK (id = 1),
             name TEXT,
             workingHoursStart TEXT,
-            workingHoursEnd TEXT
+            workingHoursEnd TEXT,
+            breakStart TEXT,
+            breakEnd TEXT
         )`);
+
+        // Migration for existing DBs (Try to add columns, ignore if exists)
+        db.run("ALTER TABLE settings ADD COLUMN breakStart TEXT", (err) => { });
+        db.run("ALTER TABLE settings ADD COLUMN breakEnd TEXT", (err) => { });
 
         // Initialize default settings if not exists
         db.get("SELECT * FROM settings WHERE id = 1", (err, row) => {
             if (!row) {
-                db.run(`INSERT INTO settings (id, name, workingHoursStart, workingHoursEnd) 
-                        VALUES (1, 'MediCare Clinic', '09:00', '17:00')`);
+                db.run(`INSERT INTO settings (id, name, workingHoursStart, workingHoursEnd, breakStart, breakEnd) 
+                        VALUES (1, 'MediCare Clinic', '09:00', '17:00', '13:00', '14:00')`);
             }
         });
     });

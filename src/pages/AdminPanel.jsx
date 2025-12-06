@@ -53,6 +53,27 @@ const AdminPanel = () => {
                         </div>
                     </div>
 
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Break Start</label>
+                            <input
+                                type="time"
+                                value={settings.breakStart || ''}
+                                onChange={(e) => setSettings({ ...settings, breakStart: e.target.value })}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                            />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Break End</label>
+                            <input
+                                type="time"
+                                value={settings.breakEnd || ''}
+                                onChange={(e) => setSettings({ ...settings, breakEnd: e.target.value })}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                            />
+                        </div>
+                    </div>
+
                     <div style={{ paddingTop: '1rem', borderTop: '1px solid #eee' }}>
                         <button type="submit" className="btn btn-primary">
                             <Save size={20} />
