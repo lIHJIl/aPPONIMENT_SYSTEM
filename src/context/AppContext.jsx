@@ -197,6 +197,12 @@ export const AppProvider = ({ children }) => {
         });
     };
 
+    const [userRole, setUserRole] = useState('admin'); // 'admin' or 'patient'
+
+    const toggleRole = () => {
+        setUserRole(prev => prev === 'admin' ? 'patient' : 'admin');
+    };
+
     useEffect(() => {
         if (darkMode) {
             document.documentElement.classList.add('dark');
@@ -204,7 +210,7 @@ export const AppProvider = ({ children }) => {
     }, []);
 
     return (
-        <AppContext.Provider value={{ state, dispatch: asyncDispatch, loading, darkMode, toggleTheme }}>
+        <AppContext.Provider value={{ state, dispatch: asyncDispatch, loading, darkMode, toggleTheme, userRole, toggleRole }}>
             {!loading ? children : <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}
         </AppContext.Provider>
     );

@@ -1,16 +1,20 @@
 import { useApp } from '../../context/AppContext';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Calendar, Users, Stethoscope, Settings, Moon, Sun } from 'lucide-react';
+import ClinicClock from '../UI/ClinicClock';
 
 const Sidebar = () => {
-    const { darkMode, toggleTheme } = useApp();
-    const navItems = [
-        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { to: '/appointments', icon: Calendar, label: 'Appointments' },
-        { to: '/doctors', icon: Stethoscope, label: 'Doctors' },
-        { to: '/patients', icon: Users, label: 'Patients' },
-        { to: '/admin', icon: Settings, label: 'Admin Panel' },
+    const { darkMode, toggleTheme, userRole, toggleRole } = useApp();
+
+    const allNavItems = [
+        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['admin', 'patient'] },
+        { to: '/appointments', icon: Calendar, label: 'Appointments', roles: ['admin', 'patient'] },
+        { to: '/doctors', icon: Stethoscope, label: 'Doctors', roles: ['admin'] },
+        { to: '/patients', icon: Users, label: 'Patients', roles: ['admin', 'patient'] },
+        { to: '/admin', icon: Settings, label: 'Admin Panel', roles: ['admin'] },
     ];
+
+    const navItems = allNavItems.filter(item => item.roles.includes(userRole));
 
     return (
         <aside style={{
@@ -28,6 +32,7 @@ const Sidebar = () => {
             <div style={{ marginBottom: 'var(--spacing-xl)', color: 'hsl(var(--primary))', fontWeight: 'bold', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Stethoscope size={32} />
                 <span>MediCare</span>
+                <span style={{ fontSize: '0.75rem', background: 'hsl(var(--secondary))', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>{userRole.toUpperCase()}</span>
             </div>
 
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
@@ -55,24 +60,46 @@ const Sidebar = () => {
                 ))}
             </nav>
 
-            <button
-                onClick={toggleTheme}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1rem',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '8px',
-                    color: 'hsl(var(--text-muted))',
-                    cursor: 'pointer',
-                    marginTop: 'auto',
-                    border: '1px solid var(--glass-border)',
-                    background: 'transparent'
-                }}
-            >
-                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-                {darkMode ? 'Light Mode' : 'Dark Mode'}
-            </button>
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <ClinicClock />
+                <button
+                    onClick={toggleRole}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        padding: '0.75rem',
+                        borderRadius: '8px',
+                        background: 'hsl(var(--secondary))',
+                        color: 'white',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        fontWeight: 500
+                    }}
+                >
+                    <Users size={18} />
+                    Switch to {userRole === 'admin' ? 'Patient' : 'Admin'}
+                </button>
+
+                <button
+                    onClick={toggleTheme}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '8px',
+                        color: 'hsl(var(--text-muted))',
+                        cursor: 'pointer',
+                        border: '1px solid var(--glass-border)',
+                        background: 'transparent'
+                    }}
+                >
+                    {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    {darkMode ? 'Light Mode' : 'Dark Mode'}
+                </button>
+            </div>
         </aside>
     );
 };

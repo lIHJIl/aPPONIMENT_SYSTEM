@@ -5,7 +5,7 @@ import Modal from '../components/UI/Modal';
 import { format, parseISO, isSameMinute, addMinutes } from 'date-fns';
 
 const Appointments = () => {
-    const { state, dispatch } = useApp();
+    const { state, dispatch, userRole } = useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -32,6 +32,15 @@ const Appointments = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        const selectedDate = new Date(formData.date);
+        const now = new Date();
+
+        if (selectedDate < now) {
+            alert('Cannot book appointments in the past.');
+            return;
+        }
+
         if (!checkAvailability(formData.doctorId, formData.date)) {
             alert('Doctor is not available at this time (30 min slot conflict).');
             return;
@@ -113,19 +122,23 @@ const Appointments = () => {
                                 </td>
                                 <td style={{ padding: '1rem' }}>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        {apt.status === 'Pending' && (
+                                        {userRole === 'admin' && (
                                             <>
-                                                <button title="Complete" onClick={() => handleStatusChange(apt.id, 'Completed')} className="btn" style={{ padding: '0.25rem', color: 'hsl(var(--success))' }}>
-                                                    <CheckCircle size={18} />
-                                                </button>
-                                                <button title="Cancel" onClick={() => handleStatusChange(apt.id, 'Cancelled')} className="btn" style={{ padding: '0.25rem', color: 'hsl(var(--danger))' }}>
-                                                    <XCircle size={18} />
+                                                {apt.status === 'Pending' && (
+                                                    <>
+                                                        <button title="Complete" onClick={() => handleStatusChange(apt.id, 'Completed')} className="btn" style={{ padding: '0.25rem', color: 'hsl(var(--success))' }}>
+                                                            <CheckCircle size={18} />
+                                                        </button>
+                                                        <button title="Cancel" onClick={() => handleStatusChange(apt.id, 'Cancelled')} className="btn" style={{ padding: '0.25rem', color: 'hsl(var(--danger))' }}>
+                                                            <XCircle size={18} />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                <button title="Delete" onClick={() => handleDelete(apt.id)} className="btn" style={{ padding: '0.25rem', color: '#9ca3af' }}>
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </>
                                         )}
-                                        <button title="Delete" onClick={() => handleDelete(apt.id)} className="btn" style={{ padding: '0.25rem', color: '#9ca3af' }}>
-                                            <Trash2 size={18} />
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -176,6 +189,7 @@ const Appointments = () => {
                         <input
                             required
                             type="datetime-local"
+                            min={new Date().toISOString().slice(0, 16)}
                             value={formData.date}
                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                             style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}

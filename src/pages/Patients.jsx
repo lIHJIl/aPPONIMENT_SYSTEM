@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import Modal from '../components/UI/Modal';
 
 const Patients = () => {
-    const { state, dispatch } = useApp();
+    const { state, dispatch, userRole } = useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPatient, setEditingPatient] = useState(null);
 
@@ -85,8 +85,12 @@ const Patients = () => {
                                 </div>
                             </div>
                             <div style={{ display: 'flex', gap: '0.25rem' }}>
-                                <button onClick={() => handleOpenModal(patient)} className="btn" style={{ padding: '0.25rem' }}><Edit2 size={16} /></button>
-                                <button onClick={() => handleDelete(patient.id)} className="btn" style={{ padding: '0.25rem', color: 'hsl(var(--danger))' }}><Trash2 size={16} /></button>
+                                {userRole === 'admin' && (
+                                    <>
+                                        <button onClick={() => handleOpenModal(patient)} className="btn" style={{ padding: '0.25rem' }}><Edit2 size={16} /></button>
+                                        <button onClick={() => handleDelete(patient.id)} className="btn" style={{ padding: '0.25rem', color: 'hsl(var(--danger))' }}><Trash2 size={16} /></button>
+                                    </>
+                                )}
                             </div>
                         </div>
 
