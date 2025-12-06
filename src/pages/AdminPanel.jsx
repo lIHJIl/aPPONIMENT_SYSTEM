@@ -82,6 +82,43 @@ const AdminPanel = () => {
                     </div>
                 </form>
             </div>
+
+            <div className="card" style={{ marginTop: '2rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Change Admin Password</h3>
+                <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const newPassword = e.target.password.value;
+                    if (!newPassword) return;
+
+                    try {
+                        const res = await fetch('http://localhost:3000/api/admin/password', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ newPassword })
+                        });
+                        if (res.ok) {
+                            alert('Password updated successfully');
+                            e.target.reset();
+                        } else {
+                            alert('Failed to update password');
+                        }
+                    } catch (err) {
+                        alert('Error updating password');
+                    }
+                }} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>New Password</label>
+                        <input
+                            name="password"
+                            type="password"
+                            placeholder="Enter new password"
+                            required
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary">Update Password</button>
+                </form>
+            </div>
         </div>
     );
 };

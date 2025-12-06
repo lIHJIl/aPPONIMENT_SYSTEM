@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Calendar, Users, Stethoscope, Settings, Moon, Sun } from 'lucide-react';
 import ClinicClock from '../UI/ClinicClock';
+import LoginModal from '../Auth/LoginModal';
 
 const Sidebar = () => {
     const { darkMode, toggleTheme, userRole, toggleRole } = useApp();
+    const [isLoginOpen, setIsLoginOpen] = useState(false);
 
     const allNavItems = [
         { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['admin', 'patient'] },
@@ -63,7 +66,13 @@ const Sidebar = () => {
             <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <ClinicClock />
                 <button
-                    onClick={toggleRole}
+                    onClick={() => {
+                        if (userRole === 'admin') {
+                            toggleRole(); // Switch to patient immediately
+                        } else {
+                            setIsLoginOpen(true); // Open login modal
+                        }
+                    }}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -81,6 +90,33 @@ const Sidebar = () => {
                     <Users size={18} />
                     Switch to {userRole === 'admin' ? 'Patient' : 'Admin'}
                 </button>
+
+                <LoginModal
+                    isOpen={isLoginOpen}
+                    onClose={() => setIsLoginOpen(false)}
+                    onLogin={async (username, password) => {
+                        if (username !== 'admin') return false;
+
+                        try {
+                            console.log('Verifying with server...');
+                            const res = await fetch('http://localhost:3000/api/admin/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ password })
+                            });
+                            const data = await res.json();
+                            console.log('Server response:', data);
+
+                            if (data.success) {
+                                toggleRole();
+                                return true;
+                            }
+                        } catch (e) {
+                            console.error("Login verification failed:", e);
+                        }
+                        return false;
+                    }}
+                />
 
                 <button
                     onClick={toggleTheme}

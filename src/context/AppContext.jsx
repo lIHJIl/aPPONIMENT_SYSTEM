@@ -199,7 +199,7 @@ export const AppProvider = ({ children }) => {
         });
     };
 
-    const [userRole, setUserRole] = useState('admin'); // 'admin' or 'patient'
+    const [userRole, setUserRole] = useState('patient'); // 'admin' or 'patient'
 
     const toggleRole = () => {
         setUserRole(prev => prev === 'admin' ? 'patient' : 'admin');

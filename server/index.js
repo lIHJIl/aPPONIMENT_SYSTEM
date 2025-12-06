@@ -128,7 +128,7 @@ app.delete('/api/appointments/:id', (req, res) => {
 
 // --- Settings API ---
 app.get('/api/settings', (req, res) => {
-    db.get("SELECT * FROM settings WHERE id = 1", (err, row) => {
+    db.get("SELECT name, workingHoursStart, workingHoursEnd, breakStart, breakEnd FROM settings WHERE id = 1", (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(row);
     });
@@ -143,6 +143,32 @@ app.put('/api/settings', (req, res) => {
             res.json({ name, workingHoursStart, workingHoursEnd, breakStart, breakEnd });
         }
     );
+});
+
+app.post('/api/admin/verify', (req, res) => {
+    const { password } = req.body;
+    db.get("SELECT adminPassword FROM settings WHERE id = 1", (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        console.log("Verify Request - Received:", password);
+        console.log("Verify Request - Stored:", row ? row.adminPassword : 'No Row');
+
+        if (row && row.adminPassword === password) {
+            console.log("Verify Request - MATCH!");
+            res.json({ success: true });
+        } else {
+            console.log("Verify Request - MISMATCH");
+            res.status(401).json({ success: false, error: 'Invalid password' });
+        }
+    });
+});
+
+app.put('/api/admin/password', (req, res) => {
+    const { newPassword } = req.body;
+    db.run("UPDATE settings SET adminPassword = ? WHERE id = 1", [newPassword], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true });
+    });
 });
 
 app.listen(PORT, () => {

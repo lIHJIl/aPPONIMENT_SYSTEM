@@ -1,21 +1,21 @@
-import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div style={{
             position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: 1000,
+            zIndex: 9999,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(0,0,0,0.4)',
+            background: 'rgba(0,0,0,0.5)',
             backdropFilter: 'blur(4px)',
         }}>
             <div className="card" style={{
@@ -24,11 +24,13 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                 maxHeight: '90vh',
                 overflowY: 'auto',
                 position: 'relative',
-                animation: 'slideIn 0.3s ease'
+                animation: 'slideIn 0.3s ease',
+                background: 'hsl(var(--surface))',
+                boxShadow: 'var(--shadow-lg)'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-md)' }}>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>{title}</h3>
-                    <button onClick={onClose} style={{ padding: '0.25rem', borderRadius: '50%', cursor: 'pointer' }}>
+                    <button onClick={onClose} style={{ padding: '0.25rem', borderRadius: '50%', cursor: 'pointer', border: 'none', background: 'transparent', color: 'hsl(var(--text-main))' }}>
                         <X size={20} />
                     </button>
                 </div>
@@ -40,7 +42,8 @@ const Modal = ({ isOpen, onClose, title, children }) => {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-        </div>
+        </div>,
+        document.body
     );
 };
 
