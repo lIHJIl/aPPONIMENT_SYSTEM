@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import Modal from '../components/UI/Modal';
 
 const Doctors = () => {
-    const { state, dispatch } = useApp();
+    const { state, dispatch, userRole } = useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDoctor, setEditingDoctor] = useState(null);
 
@@ -51,13 +51,15 @@ const Doctors = () => {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
                 <div>
-                    <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Doctors</h1>
-                    <p style={{ color: 'hsl(var(--text-muted))' }}>Manage your medical team</p>
+                    <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>{userRole === 'admin' ? 'Manage Doctors' : 'Meet Our Doctors'}</h1>
+                    <p style={{ color: 'hsl(var(--text-muted))' }}>{userRole === 'admin' ? 'Manage your medical team' : 'Our specialist team is here to help you.'}</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-                    <Plus size={20} />
-                    Add Doctor
-                </button>
+                {userRole === 'admin' && (
+                    <button className="btn btn-primary" onClick={() => handleOpenModal()}>
+                        <Plus size={20} />
+                        Add Doctor
+                    </button>
+                )}
             </div>
 
             <div className="grid-cols-3">
@@ -99,22 +101,24 @@ const Doctors = () => {
                             <p>Experience: {doctor.experience} years</p>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
-                            <button
-                                onClick={() => handleOpenModal(doctor)}
-                                className="btn btn-outline"
-                                style={{ flex: 1, padding: '0.5rem' }}
-                            >
-                                <Edit2 size={16} /> Edit
-                            </button>
-                            <button
-                                onClick={() => handleDelete(doctor.id)}
-                                className="btn"
-                                style={{ color: 'hsl(var(--danger))', background: '#fee2e2', padding: '0.5rem 0.75rem' }}
-                            >
-                                <Trash2 size={16} />
-                            </button>
-                        </div>
+                        {userRole === 'admin' && (
+                            <div style={{ display: 'flex', gap: '0.5rem', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
+                                <button
+                                    onClick={() => handleOpenModal(doctor)}
+                                    className="btn btn-outline"
+                                    style={{ flex: 1, padding: '0.5rem' }}
+                                >
+                                    <Edit2 size={16} /> Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(doctor.id)}
+                                    className="btn"
+                                    style={{ color: 'hsl(var(--danger))', background: '#fee2e2', padding: '0.5rem 0.75rem' }}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

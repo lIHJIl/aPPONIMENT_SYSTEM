@@ -51,18 +51,22 @@ const initDb = () => {
             workingHoursStart TEXT,
             workingHoursEnd TEXT,
             breakStart TEXT,
-            breakEnd TEXT
+            breakEnd TEXT,
+            slotDuration INTEGER DEFAULT 30,
+            adminPassword TEXT
         )`);
 
         // Migration for existing DBs (Try to add columns, ignore if exists)
         db.run("ALTER TABLE settings ADD COLUMN breakStart TEXT", (err) => { });
         db.run("ALTER TABLE settings ADD COLUMN breakEnd TEXT", (err) => { });
+        db.run("ALTER TABLE settings ADD COLUMN slotDuration INTEGER DEFAULT 30", (err) => { });
+        db.run("ALTER TABLE settings ADD COLUMN adminPassword TEXT DEFAULT 'admin'", (err) => { });
 
         // Initialize default settings if not exists
         db.get("SELECT * FROM settings WHERE id = 1", (err, row) => {
             if (!row) {
-                db.run(`INSERT INTO settings (id, name, workingHoursStart, workingHoursEnd, breakStart, breakEnd) 
-                        VALUES (1, 'MediCare Clinic', '09:00', '17:00', '13:00', '14:00')`);
+                db.run(`INSERT INTO settings (id, name, workingHoursStart, workingHoursEnd, breakStart, breakEnd, slotDuration, adminPassword) 
+                        VALUES (1, 'MediCare Clinic', '09:00', '17:00', '13:00', '14:00', 30, 'admin')`);
             }
         });
     });

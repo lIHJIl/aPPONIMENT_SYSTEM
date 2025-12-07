@@ -128,19 +128,19 @@ app.delete('/api/appointments/:id', (req, res) => {
 
 // --- Settings API ---
 app.get('/api/settings', (req, res) => {
-    db.get("SELECT name, workingHoursStart, workingHoursEnd, breakStart, breakEnd FROM settings WHERE id = 1", (err, row) => {
+    db.get("SELECT name, workingHoursStart, workingHoursEnd, breakStart, breakEnd, slotDuration FROM settings WHERE id = 1", (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(row);
     });
 });
 
 app.put('/api/settings', (req, res) => {
-    const { name, workingHoursStart, workingHoursEnd, breakStart, breakEnd } = req.body;
-    db.run(`UPDATE settings SET name = ?, workingHoursStart = ?, workingHoursEnd = ?, breakStart = ?, breakEnd = ? WHERE id = 1`,
-        [name, workingHoursStart, workingHoursEnd, breakStart, breakEnd],
+    const { name, workingHoursStart, workingHoursEnd, breakStart, breakEnd, slotDuration } = req.body;
+    db.run(`UPDATE settings SET name = ?, workingHoursStart = ?, workingHoursEnd = ?, breakStart = ?, breakEnd = ?, slotDuration = ? WHERE id = 1`,
+        [name, workingHoursStart, workingHoursEnd, breakStart, breakEnd, slotDuration],
         function (err) {
             if (err) return res.status(500).json({ error: err.message });
-            res.json({ name, workingHoursStart, workingHoursEnd, breakStart, breakEnd });
+            res.json({ name, workingHoursStart, workingHoursEnd, breakStart, breakEnd, slotDuration });
         }
     );
 });

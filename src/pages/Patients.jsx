@@ -60,54 +60,66 @@ const Patients = () => {
                 </button>
             </div>
 
-            <div className="grid-cols-2">
-                {state.patients.map(patient => (
-                    <div key={patient.id} className="card">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <div style={{
-                                    width: '50px',
-                                    height: '50px',
-                                    borderRadius: '12px',
-                                    background: 'hsl(var(--secondary))',
-                                    color: 'white',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontWeight: 'bold',
-                                    fontSize: '1.25rem'
-                                }}>
-                                    {patient.name.charAt(0)}
+            {userRole === 'admin' ? (
+                <div className="grid-cols-2">
+                    {state.patients.map(patient => (
+                        <div key={patient.id} className="card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <div style={{
+                                        width: '50px',
+                                        height: '50px',
+                                        borderRadius: '12px',
+                                        background: 'hsl(var(--secondary))',
+                                        color: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontWeight: 'bold',
+                                        fontSize: '1.25rem'
+                                    }}>
+                                        {patient.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <h3 style={{ fontWeight: 600 }}>{patient.name}</h3>
+                                        <p style={{ color: 'hsl(var(--text-muted))', fontSize: '0.9rem' }}>Age: {patient.age} • {patient.phone}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 style={{ fontWeight: 600 }}>{patient.name}</h3>
-                                    <p style={{ color: 'hsl(var(--text-muted))', fontSize: '0.9rem' }}>Age: {patient.age} • {patient.phone}</p>
+                                <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                    <button onClick={() => handleOpenModal(patient)} className="btn" style={{ padding: '0.25rem' }}><Edit2 size={16} /></button>
+                                    <button onClick={() => handleDelete(patient.id)} className="btn" style={{ padding: '0.25rem', color: 'hsl(var(--danger))' }}><Trash2 size={16} /></button>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '0.25rem' }}>
-                                {userRole === 'admin' && (
-                                    <>
-                                        <button onClick={() => handleOpenModal(patient)} className="btn" style={{ padding: '0.25rem' }}><Edit2 size={16} /></button>
-                                        <button onClick={() => handleDelete(patient.id)} className="btn" style={{ padding: '0.25rem', color: 'hsl(var(--danger))' }}><Trash2 size={16} /></button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
 
-                        {patient.history && (
-                            <div style={{ marginTop: '1rem', padding: '1rem', background: 'hsl(var(--background))', borderRadius: '8px', fontSize: '0.9rem' }}>
-                                <strong>Medical History:</strong>
-                                <p style={{ marginTop: '0.25rem', color: 'hsl(var(--text-muted))' }}>{patient.history}</p>
-                            </div>
-                        )}
+                            {patient.history && (
+                                <div style={{ marginTop: '1rem', padding: '1rem', background: 'hsl(var(--background))', borderRadius: '8px', fontSize: '0.9rem' }}>
+                                    <strong>Medical History:</strong>
+                                    <p style={{ marginTop: '0.25rem', color: 'hsl(var(--text-muted))' }}>{patient.history}</p>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                    {state.patients.length === 0 && (
+                        <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '3rem', color: 'hsl(var(--text-muted))' }}>
+                            No patients found. Add one to get started.
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                        <div style={{ padding: '1rem', borderRadius: '50%', background: 'hsla(var(--primary), 0.1)' }}>
+                            <User size={32} color="hsl(var(--primary))" />
+                        </div>
                     </div>
-                ))}
-                {state.patients.length === 0 && (
-                    <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '3rem', color: 'hsl(var(--text-muted))' }}>
-                        No patients found. Add one to get started.
-                    </div>
-                )}
-            </div>
+                    <h3 style={{ marginBottom: '0.5rem' }}>Patient Privacy Protected</h3>
+                    <p style={{ color: 'hsl(var(--text-muted))', maxWidth: '400px', margin: '0 auto' }}>
+                        To protect patient confidentiality, the full patient list is only visible to administrators.
+                        <br /><br />
+                        You can still register a new patient record using the <strong>Add Patient</strong> button above.
+                    </p>
+                </div>
+            )}
 
             <Modal
                 isOpen={isModalOpen}

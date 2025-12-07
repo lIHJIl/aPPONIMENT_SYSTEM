@@ -53,6 +53,8 @@ const AdminPanel = () => {
                         </div>
                     </div>
 
+
+
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         <div style={{ flex: 1 }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Break Start</label>
@@ -60,7 +62,7 @@ const AdminPanel = () => {
                                 type="time"
                                 value={settings.breakStart || ''}
                                 onChange={(e) => setSettings({ ...settings, breakStart: e.target.value })}
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
                             />
                         </div>
                         <div style={{ flex: 1 }}>
@@ -69,9 +71,24 @@ const AdminPanel = () => {
                                 type="time"
                                 value={settings.breakEnd || ''}
                                 onChange={(e) => setSettings({ ...settings, breakEnd: e.target.value })}
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
                             />
                         </div>
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Appointment Slot Duration</label>
+                        <select
+                            value={settings.slotDuration || 30}
+                            onChange={(e) => setSettings({ ...settings, slotDuration: parseInt(e.target.value) })}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
+                        >
+                            <option value={15}>15 Minutes</option>
+                            <option value={20}>20 Minutes</option>
+                            <option value={30}>30 Minutes</option>
+                            <option value={45}>45 Minutes</option>
+                            <option value={60}>1 Hour</option>
+                        </select>
                     </div>
 
                     <div style={{ paddingTop: '1rem', borderTop: '1px solid #eee' }}>
@@ -81,7 +98,7 @@ const AdminPanel = () => {
                         </button>
                     </div>
                 </form>
-            </div>
+            </div >
 
             <div className="card" style={{ marginTop: '2rem' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Change Admin Password</h3>
@@ -119,7 +136,7 @@ const AdminPanel = () => {
                     <button type="submit" className="btn btn-primary">Update Password</button>
                 </form>
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -24,9 +24,10 @@ const Appointments = () => {
         return !state.appointments.some(apt => {
             if (apt.doctorId !== doctorId || apt.status === 'Cancelled') return false;
             const aptDate = new Date(apt.date);
-            // Check if within 30 mins of an existing appointment
+            // Check if within slotDuration of an existing appointment
+            const duration = state.clinicSettings.slotDuration || 30;
             const diff = Math.abs(newDate - aptDate) / (1000 * 60);
-            return diff < 30;
+            return diff < duration;
         });
     };
 
@@ -54,7 +55,8 @@ const Appointments = () => {
         }
 
         if (!checkAvailability(formData.doctorId, formData.date)) {
-            alert('Doctor is not available at this time (30 min slot conflict).');
+            const duration = state.clinicSettings.slotDuration || 30;
+            alert(`Doctor is not available at this time (${duration} min slot conflict).`);
             return;
         }
         dispatch({ type: 'ADD_APPOINTMENT', payload: formData });
@@ -197,27 +199,78 @@ const Appointments = () => {
                         </select>
                     </div>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Date & Time</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Date</label>
                         <input
                             required
-                            type="datetime-local"
-                            min={new Date().toISOString().slice(0, 16)}
-                            value={formData.date}
-                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                            type="date"
+                            min={new Date().toISOString().slice(0, 10)}
+                            value={formData.date ? format(new Date(formData.date), 'yyyy-MM-dd') : ''}
+                            onChange={(e) => setFormData({ ...formData, date: e.target.value ? new Date(`${e.target.value}T00:00`).toISOString() : '' })}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '1rem' }}
                         />
                     </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Reason</label>
-                        <textarea
-                            required
-                            rows="2"
-                            placeholder="Routine Checkup"
-                            value={formData.reason}
-                            onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
-                        />
-                    </div>
+
+                    {formData.date && formData.doctorId && (
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Select Time Slot ({state.clinicSettings.slotDuration || 30} mins)</label>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', maxHeight: '200px', overflowY: 'auto', padding: '0.5rem', border: '1px solid #eee', borderRadius: '8px' }}>
+                                {(() => {
+                                    const slots = [];
+                                    const { workingHoursStart, workingHoursEnd, breakStart, breakEnd, slotDuration = 30 } = state.clinicSettings;
+                                    const dateStr = format(new Date(formData.date), 'yyyy-MM-dd');
+
+                                    let start = parse(workingHoursStart, 'HH:mm', new Date(formData.date));
+                                    const end = parse(workingHoursEnd, 'HH:mm', new Date(formData.date));
+                                    const bStart = breakStart ? parse(breakStart, 'HH:mm', new Date(formData.date)) : null;
+                                    const bEnd = breakEnd ? parse(breakEnd, 'HH:mm', new Date(formData.date)) : null;
+
+                                    while (start < end) {
+                                        const timeStr = format(start, 'HH:mm');
+                                        const slotTimeISO = `${dateStr}T${timeStr}`; // Construct ISO string manually to match format
+
+                                        // Check Availability
+                                        const isBreak = bStart && bEnd && isWithinInterval(addMinutes(start, 1), { start: bStart, end: bEnd });
+
+                                        const isBooked = state.appointments.some(apt => {
+                                            if (apt.doctorId !== formData.doctorId || apt.status === 'Cancelled') return false;
+                                            const aptDate = new Date(apt.date);
+                                            const slotDate = new Date(slotTimeISO);
+                                            // Check for exact match or overlap
+                                            return Math.abs(slotDate - aptDate) < (slotDuration * 60 * 1000);
+                                        });
+
+                                        const isPast = new Date(slotTimeISO) < new Date();
+                                        const isDisabled = isBreak || isBooked || isPast;
+                                        const isSelected = formData.date && format(new Date(formData.date), 'HH:mm') === timeStr;
+
+                                        slots.push(
+                                            <button
+                                                key={timeStr}
+                                                type="button"
+                                                disabled={isDisabled}
+                                                onClick={() => setFormData({ ...formData, date: slotTimeISO })}
+                                                className={isDisabled ? '' : 'btn'}
+                                                style={{
+                                                    padding: '0.5rem',
+                                                    fontSize: '0.875rem',
+                                                    borderRadius: '6px',
+                                                    backgroundColor: isSelected ? 'hsl(var(--primary))' : isDisabled ? 'hsla(var(--text-muted), 0.1)' : 'hsl(var(--surface))',
+                                                    color: isSelected ? 'white' : isDisabled ? 'hsl(var(--text-muted))' : 'hsl(var(--text-main))',
+                                                    border: isSelected ? 'none' : '1px solid hsla(var(--text-muted), 0.2)',
+                                                    cursor: isDisabled ? 'not-allowed' : 'pointer'
+                                                }}
+                                            >
+                                                {timeStr}
+                                            </button>
+                                        );
+
+                                        start = addMinutes(start, slotDuration);
+                                    }
+                                    return slots.length > 0 ? slots : <div style={{ gridColumn: 'span 4', textAlign: 'center', color: '#888' }}>No details available. Check clinic settings.</div>;
+                                })()}
+                            </div>
+                        </div>
+                    )}
 
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                         <button type="button" onClick={() => setIsModalOpen(false)} className="btn" style={{ flex: 1, border: '1px solid #ddd' }}>Cancel</button>
