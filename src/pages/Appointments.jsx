@@ -101,7 +101,7 @@ const Appointments = () => {
             <div style={{ background: 'hsl(var(--surface))', borderRadius: '12px', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
-                        <tr style={{ background: '#f9fafb', borderBottom: '1px solid #eee' }}>
+                        <tr>
                             <th style={{ padding: '1rem', fontWeight: 600 }}>Date & Time</th>
                             <th style={{ padding: '1rem', fontWeight: 600 }}>Patient</th>
                             <th style={{ padding: '1rem', fontWeight: 600 }}>Doctor</th>
@@ -111,7 +111,7 @@ const Appointments = () => {
                     </thead>
                     <tbody>
                         {sortedAppointments.map(apt => (
-                            <tr key={apt.id} style={{ borderBottom: '1px solid #eee' }}>
+                            <tr key={apt.id}>
                                 <td style={{ padding: '1rem' }}>
                                     <div style={{ fontWeight: 500 }}>{format(parseISO(apt.date), 'MMM d, yyyy')}</div>
                                     <div style={{ fontSize: '0.875rem', color: 'hsl(var(--text-muted))', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -178,7 +178,7 @@ const Appointments = () => {
                             required
                             value={formData.patientId}
                             onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
                         >
                             <option value="">Select Patient</option>
                             {state.patients.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -190,7 +190,7 @@ const Appointments = () => {
                             required
                             value={formData.doctorId}
                             onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
                         >
                             <option value="">Select Doctor</option>
                             {state.doctors.map(d => <option key={d.id} value={d.id}>{d.name} ({d.specialty})</option>)}
@@ -225,7 +225,7 @@ const Appointments = () => {
                     </div>
                 </form>
             </Modal>
-        </div>
+        </div >
     );
 };
 

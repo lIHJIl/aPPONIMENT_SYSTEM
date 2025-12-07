@@ -95,7 +95,7 @@ const Patients = () => {
                         </div>
 
                         {patient.history && (
-                            <div style={{ marginTop: '1rem', padding: '1rem', background: '#f9fafb', borderRadius: '8px', fontSize: '0.9rem' }}>
+                            <div style={{ marginTop: '1rem', padding: '1rem', background: 'hsl(var(--background))', borderRadius: '8px', fontSize: '0.9rem' }}>
                                 <strong>Medical History:</strong>
                                 <p style={{ marginTop: '0.25rem', color: 'hsl(var(--text-muted))' }}>{patient.history}</p>
                             </div>
@@ -123,7 +123,7 @@ const Patients = () => {
                             placeholder="Alice Smith"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
                         />
                     </div>
                     <div style={{ display: 'flex', gap: '1rem' }}>
@@ -135,7 +135,7 @@ const Patients = () => {
                                 placeholder="30"
                                 value={formData.age}
                                 onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
                             />
                         </div>
                         <div style={{ flex: 1 }}>
@@ -146,7 +146,7 @@ const Patients = () => {
                                 placeholder="(555) 123-4567"
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
                             />
                         </div>
                     </div>
@@ -157,7 +157,7 @@ const Patients = () => {
                             placeholder="Allergies, chronic conditions..."
                             value={formData.history}
                             onChange={(e) => setFormData({ ...formData, history: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd', resize: 'vertical' }}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', resize: 'vertical' }}
                         />
                     </div>
 
