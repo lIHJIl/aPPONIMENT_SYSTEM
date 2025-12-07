@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, CheckCircle, XCircle, Calendar, Clock } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import Modal from '../components/UI/Modal';
-import { format, parseISO, isSameMinute, addMinutes } from 'date-fns';
+import { format, parseISO, isSameMinute, addMinutes, parse, isWithinInterval } from 'date-fns';
 
 const Appointments = () => {
     const { state, dispatch, userRole } = useApp();
