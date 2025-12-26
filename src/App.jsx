@@ -5,6 +5,7 @@ import MainLayout from './components/Layout/MainLayout';
 import ProtectedRoute from './components/Layout/ProtectedRoute';
 
 // Lazy Load Pages for Performance
+const Home = lazy(() => import('./pages/Home'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Appointments = lazy(() => import('./pages/Appointments'));
 const Doctors = lazy(() => import('./pages/Doctors'));
@@ -25,13 +26,25 @@ function App() {
       <Router>
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="appointments" element={<Appointments />} />
-              <Route path="doctors" element={<Doctors />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/*" element={<MainLayout />}>
+              <Route path="dashboard" element={
+                <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="appointments" element={
+                <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
+                  <Appointments />
+                </ProtectedRoute>
+              } />
+              <Route path="doctors" element={
+                <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
+                  <Doctors />
+                </ProtectedRoute>
+              } />
               <Route path="patients" element={
-                <ProtectedRoute allowedRoles={['admin']}>
+                <ProtectedRoute allowedRoles={['admin', 'staff']}>
                   <Patients />
                 </ProtectedRoute>
               } />

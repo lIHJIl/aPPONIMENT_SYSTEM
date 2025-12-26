@@ -6,8 +6,7 @@ import ClinicClock from '../UI/ClinicClock';
 import LoginModal from '../Auth/LoginModal';
 
 const Sidebar = () => {
-    const { darkMode, toggleTheme, userRole, toggleRole } = useApp();
-    const [isLoginOpen, setIsLoginOpen] = useState(false);
+    const { darkMode, toggleTheme, userRole, logout } = useApp();
 
     const allNavItems = [
         { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['admin', 'patient'] },
@@ -35,7 +34,7 @@ const Sidebar = () => {
             <div style={{ marginBottom: 'var(--spacing-xl)', color: 'hsl(var(--primary))', fontWeight: 'bold', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Stethoscope size={32} />
                 <span>MediCare</span>
-                <span style={{ fontSize: '0.75rem', background: 'hsl(var(--secondary))', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>{userRole.toUpperCase()}</span>
+                <span style={{ fontSize: '0.75rem', background: 'hsl(var(--secondary))', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>{userRole?.toUpperCase()}</span>
             </div>
 
             <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
@@ -67,11 +66,7 @@ const Sidebar = () => {
                 <ClinicClock />
                 <button
                     onClick={() => {
-                        if (userRole === 'admin') {
-                            toggleRole(); // Switch to patient immediately
-                        } else {
-                            setIsLoginOpen(true); // Open login modal
-                        }
+                        if (confirm('Are you sure you want to log out?')) logout();
                     }}
                     style={{
                         display: 'flex',
@@ -80,44 +75,17 @@ const Sidebar = () => {
                         gap: '0.5rem',
                         padding: '0.75rem',
                         borderRadius: '8px',
-                        background: 'hsl(var(--secondary))',
+                        background: 'hsl(var(--danger))',
                         color: 'white',
                         cursor: 'pointer',
                         fontSize: '0.9rem',
-                        fontWeight: 500
+                        fontWeight: 500,
+                        border: 'none'
                     }}
                 >
                     <Users size={18} />
-                    Switch to {userRole === 'admin' ? 'Patient' : 'Admin'}
+                    Log Out
                 </button>
-
-                <LoginModal
-                    isOpen={isLoginOpen}
-                    onClose={() => setIsLoginOpen(false)}
-                    onLogin={async (username, password) => {
-                        if (username !== 'admin') return false;
-
-                        try {
-                            console.log('Verifying with server...');
-                            const res = await fetch('http://localhost:3000/api/admin/verify', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ password })
-                            });
-                            const data = await res.json();
-                            console.log('Server response:', data);
-
-                            if (data.success) {
-                                toggleRole();
-                                return true;
-                            }
-                        } catch (e) {
-                            console.error("Login verification failed:", e);
-                        }
-                        return false;
-                    }}
-                />
-
                 <button
                     onClick={toggleTheme}
                     style={{
@@ -136,7 +104,7 @@ const Sidebar = () => {
                     {darkMode ? 'Light Mode' : 'Dark Mode'}
                 </button>
             </div>
-        </aside>
+        </aside >
     );
 };
 

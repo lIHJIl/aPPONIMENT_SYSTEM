@@ -5,7 +5,7 @@ import Modal from '../components/UI/Modal';
 import { format, parseISO, isSameMinute, addMinutes, parse, isWithinInterval } from 'date-fns';
 
 const Appointments = () => {
-    const { state, dispatch, userRole } = useApp();
+    const { state, dispatch, userRole, currentUser } = useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -15,9 +15,17 @@ const Appointments = () => {
         reason: ''
     });
 
+    // Auto-select patient for patient users
+    React.useEffect(() => {
+        if (userRole === 'patient' && currentUser) {
+            setFormData(prev => ({ ...prev, patientId: currentUser.id }));
+        }
+    }, [userRole, currentUser, isModalOpen]);
+
     const getDoctorName = (id) => state.doctors.find(d => d.id === id)?.name || 'Unknown Doctor';
     const getPatientName = (id) => state.patients.find(p => p.id === id)?.name || 'Unknown Patient';
 
+    // ... (checkAvailability and handleSubmit remain same, just ensuring correct context usage)
     const checkAvailability = (doctorId, date) => {
         // Simple 30 min slot check
         const newDate = new Date(date);
@@ -61,7 +69,7 @@ const Appointments = () => {
         }
         dispatch({ type: 'ADD_APPOINTMENT', payload: formData });
         setIsModalOpen(false);
-        setFormData({ doctorId: '', patientId: '', date: '', reason: '' });
+        setFormData({ doctorId: '', patientId: userRole === 'patient' && currentUser ? currentUser.id : '', date: '', reason: '' });
     };
 
     const handleStatusChange = (id, status) => {
@@ -80,8 +88,13 @@ const Appointments = () => {
         Cancelled: 'text-red-600 bg-red-100'
     };
 
+    // Filter appointments for Patient role
+    const filteredAppointments = userRole === 'patient' && currentUser
+        ? state.appointments.filter(apt => apt.patientId === currentUser.id)
+        : state.appointments;
+
     // Sort: Pending first, then by date
-    const sortedAppointments = [...state.appointments].sort((a, b) => {
+    const sortedAppointments = [...filteredAppointments].sort((a, b) => {
         if (a.status === 'Pending' && b.status !== 'Pending') return -1;
         if (a.status !== 'Pending' && b.status === 'Pending') return 1;
         return new Date(b.date) - new Date(a.date);
@@ -136,7 +149,7 @@ const Appointments = () => {
                                 </td>
                                 <td style={{ padding: '1rem' }}>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        {userRole === 'admin' && (
+                                        {['admin', 'staff'].includes(userRole) && (
                                             <>
                                                 {apt.status === 'Pending' && (
                                                     <>
@@ -178,9 +191,10 @@ const Appointments = () => {
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Patient</label>
                         <select
                             required
+                            disabled={userRole === 'patient'}
                             value={formData.patientId}
                             onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: userRole === 'patient' ? '#f3f4f6' : 'white' }}
                         >
                             <option value="">Select Patient</option>
                             {state.patients.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}

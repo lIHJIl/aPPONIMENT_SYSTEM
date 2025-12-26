@@ -72,107 +72,38 @@ const reducer = (state, action) => {
 };
 
 export const AppProvider = ({ children }) => {
-    const [state, dispatch] = useReducer(reducer, initialState);
-    const [loading, setLoading] = useState(true);
-
-    const fetchData = async () => {
+    // Initialize state from localStorage or default
+    const init = () => {
         try {
-            setLoading(true);
-            const [doctors, patients, appointments, settings] = await Promise.all([
-                fetch(`${API_BASE}/doctors`).then(res => res.json()),
-                fetch(`${API_BASE}/patients`).then(res => res.json()),
-                fetch(`${API_BASE}/appointments`).then(res => res.json()),
-                fetch(`${API_BASE}/settings`).then(res => res.json())
-            ]);
-
-            dispatch({
-                type: 'SET_INITIAL_DATA', payload: {
-                    doctors: doctors || [],
-                    patients: patients || [],
-                    appointments: appointments || [],
-                    clinicSettings: settings || initialState.clinicSettings
-                }
-            });
-        } catch (error) {
-            console.error("Failed to fetch data:", error);
-        } finally {
-            setLoading(false);
+            const stored = localStorage.getItem('medicare_data');
+            return stored ? JSON.parse(stored) : initialState;
+        } catch (e) {
+            console.error("Failed to load local data", e);
+            return initialState;
         }
     };
 
+    const [state, dispatch] = useReducer(reducer, null, init);
+    const [loading, setLoading] = useState(false);
+
+    // Persist state changes
     useEffect(() => {
-        fetchData();
-    }, []);
-
-    // Wrap dispatch to call API then update state
-    const asyncDispatch = async (action) => {
         try {
-            switch (action.type) {
-                case 'ADD_DOCTOR':
-                    const newDoc = await fetch(`${API_BASE}/doctors`, {
-                        method: 'POST', body: JSON.stringify(action.payload), headers: { 'Content-Type': 'application/json' }
-                    }).then(res => res.json());
-                    dispatch({ type: action.type, payload: newDoc });
-                    break;
-                case 'UPDATE_DOCTOR':
-                    await fetch(`${API_BASE}/doctors/${action.payload.id}`, {
-                        method: 'PUT', body: JSON.stringify(action.payload), headers: { 'Content-Type': 'application/json' }
-                    });
-                    dispatch(action);
-                    break;
-                case 'DELETE_DOCTOR':
-                    await fetch(`${API_BASE}/doctors/${action.payload}`, { method: 'DELETE' });
-                    dispatch(action);
-                    break;
-
-                case 'ADD_PATIENT':
-                    const newPat = await fetch(`${API_BASE}/patients`, {
-                        method: 'POST', body: JSON.stringify(action.payload), headers: { 'Content-Type': 'application/json' }
-                    }).then(res => res.json());
-                    dispatch({ type: action.type, payload: newPat });
-                    break;
-                case 'UPDATE_PATIENT':
-                    await fetch(`${API_BASE}/patients/${action.payload.id}`, {
-                        method: 'PUT', body: JSON.stringify(action.payload), headers: { 'Content-Type': 'application/json' }
-                    });
-                    dispatch(action);
-                    break;
-                case 'DELETE_PATIENT':
-                    await fetch(`${API_BASE}/patients/${action.payload}`, { method: 'DELETE' });
-                    dispatch(action);
-                    break;
-
-                case 'ADD_APPOINTMENT':
-                    const newApt = await fetch(`${API_BASE}/appointments`, {
-                        method: 'POST', body: JSON.stringify(action.payload), headers: { 'Content-Type': 'application/json' }
-                    }).then(res => res.json());
-                    dispatch({ type: action.type, payload: newApt });
-                    break;
-                case 'UPDATE_APPOINTMENT_STATUS':
-                    await fetch(`${API_BASE}/appointments/${action.payload.id}/status`, {
-                        method: 'PUT', body: JSON.stringify({ status: action.payload.status }), headers: { 'Content-Type': 'application/json' }
-                    });
-                    dispatch(action);
-                    break;
-                case 'DELETE_APPOINTMENT':
-                    await fetch(`${API_BASE}/appointments/${action.payload}`, { method: 'DELETE' });
-                    dispatch(action);
-                    break;
-
-                case 'UPDATE_SETTINGS':
-                    await fetch(`${API_BASE}/settings`, {
-                        method: 'PUT', body: JSON.stringify(action.payload), headers: { 'Content-Type': 'application/json' }
-                    });
-                    dispatch(action);
-                    break;
-
-                default:
-                    dispatch(action);
-            }
-        } catch (error) {
-            console.error("API Error:", error);
-            alert("Action failed. Check server connection.");
+            localStorage.setItem('medicare_data', JSON.stringify(state));
+        } catch (e) {
+            console.error("Failed to save local data", e);
         }
+    }, [state]);
+
+    // Simplified dispatch - pure local state management
+    const localDispatch = (action) => {
+        // We can add simple ID generation here since we don't have a backend doing it
+        if (['ADD_PATIENT', 'ADD_DOCTOR', 'ADD_APPOINTMENT'].includes(action.type)) {
+            if (!action.payload.id) {
+                action.payload.id = Date.now(); // Simple mock ID
+            }
+        }
+        dispatch(action);
     };
 
     const [darkMode, setDarkMode] = useState(() => {
@@ -199,7 +130,7 @@ export const AppProvider = ({ children }) => {
         });
     };
 
-    const [userRole, setUserRole] = useState('patient'); // 'admin' or 'patient'
+    const [userRole, setUserRole] = useState(null); // 'admin' | 'patient' | 'staff' | null
 
     const toggleRole = () => {
         setUserRole(prev => prev === 'admin' ? 'patient' : 'admin');
@@ -211,8 +142,20 @@ export const AppProvider = ({ children }) => {
         }
     }, []);
 
+    const [currentUser, setCurrentUser] = useState(null);
+
+    const login = (role, userData = null) => {
+        setUserRole(role);
+        setCurrentUser(userData);
+    };
+
+    const logout = () => {
+        setUserRole(null);
+        setCurrentUser(null);
+    };
+
     return (
-        <AppContext.Provider value={{ state, dispatch: asyncDispatch, loading, darkMode, toggleTheme, userRole, toggleRole }}>
+        <AppContext.Provider value={{ state, dispatch: localDispatch, loading, darkMode, toggleTheme, userRole, toggleRole, login, logout, currentUser }}>
             {!loading ? children : <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}
         </AppContext.Provider>
     );

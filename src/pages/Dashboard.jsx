@@ -15,13 +15,13 @@ const Dashboard = () => {
 };
 
 const PatientDashboard = () => {
-    const { state } = useApp();
+    const { state, currentUser } = useApp();
     const navigate = useNavigate();
 
-    // Mocking current patient ID as the first patient for demo purposes if not authenticated properly
-    // In a real app, this would come from auth context
-    const currentPatientId = state.patients[0]?.id || 1; 
-    const patientName = state.patients.find(p => p.id === currentPatientId)?.name || 'Patient';
+    // Secure fallback: If no user is logged in (e.g., refresh), redirect or show empty state
+    // For now, we assume ProtectedRoute handles this, but we fallback safely
+    const currentPatientId = currentUser?.id;
+    const patientName = currentUser?.name || 'Patient';
 
     const myAppointments = state.appointments
         .filter(apt => apt.patientId === currentPatientId)
@@ -51,11 +51,11 @@ const PatientDashboard = () => {
                         Manage your health journey with ease. Book appointments, view your history, and stay connected with your doctors.
                     </p>
                     <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                        <button 
+                        <button
                             onClick={() => navigate('/appointments')}
                             className="btn"
-                            style={{ 
-                                background: 'white', 
+                            style={{
+                                background: 'white',
                                 color: 'hsl(var(--primary))',
                                 padding: '1rem 2rem',
                                 fontSize: '1.1rem'
@@ -63,11 +63,11 @@ const PatientDashboard = () => {
                             <Plus size={20} />
                             Book New Appointment
                         </button>
-                        <button 
+                        <button
                             onClick={() => navigate('/appointments')}
                             className="btn"
-                            style={{ 
-                                background: 'rgba(255,255,255,0.2)', 
+                            style={{
+                                background: 'rgba(255,255,255,0.2)',
                                 color: 'white',
                                 border: '1px solid rgba(255,255,255,0.4)',
                                 backdropFilter: 'blur(10px)'
@@ -94,7 +94,7 @@ const PatientDashboard = () => {
             <div className="grid-cols-2" style={{ gap: 'var(--spacing-lg)' }}>
                 {/* Left Column: Upcoming & Actions */}
                 <div style={{ display: 'grid', gap: 'var(--spacing-lg)' }}>
-                    
+
                     {/* Next Appointment Card */}
                     <div className="card" style={{ borderLeft: '6px solid hsl(var(--accent))' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -103,8 +103,8 @@ const PatientDashboard = () => {
                                 Next Appointment
                             </h2>
                             {upcomingAppointment && (
-                                <span style={{ 
-                                    background: 'hsl(var(--primary-light))', 
+                                <span style={{
+                                    background: 'hsl(var(--primary-light))',
                                     color: 'hsl(var(--primary))',
                                     padding: '0.5rem 1rem',
                                     borderRadius: '20px',
@@ -119,9 +119,9 @@ const PatientDashboard = () => {
                         {upcomingAppointment ? (
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                                    <div style={{ 
-                                        background: 'hsl(var(--background))', 
-                                        padding: '1rem', 
+                                    <div style={{
+                                        background: 'hsl(var(--background))',
+                                        padding: '1rem',
                                         borderRadius: '12px',
                                         textAlign: 'center',
                                         minWidth: '80px'
@@ -152,7 +152,7 @@ const PatientDashboard = () => {
                             <div style={{ textAlign: 'center', padding: '2rem 0', color: 'hsl(var(--text-muted))' }}>
                                 <Calendar size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
                                 <p>No upcoming appointments.</p>
-                                <button 
+                                <button
                                     onClick={() => navigate('/appointments')}
                                     style={{ marginTop: '1rem', color: 'hsl(var(--primary))', fontWeight: 600 }}>
                                     Schedule one now &rarr;
@@ -164,15 +164,15 @@ const PatientDashboard = () => {
 
                 {/* Right Column: Quick Stats / Info */}
                 <div style={{ display: 'grid', gap: 'var(--spacing-lg)', alignContent: 'start' }}>
-                     <div className="card">
+                    <div className="card">
                         <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem' }}>Quick Actions</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                            <QuickActionCard icon={User} label="My Profile" onClick={() => {}} />
-                            <QuickActionCard icon={Activity} label="Lab Results" onClick={() => {}} />
+                            <QuickActionCard icon={User} label="My Profile" onClick={() => { }} />
+                            <QuickActionCard icon={Activity} label="Lab Results" onClick={() => { }} />
                             <QuickActionCard icon={History} label="Past Visits" onClick={() => navigate('/appointments')} />
                             <QuickActionCard icon={Stethoscope} label="Find Doctor" onClick={() => navigate('/doctors')} />
                         </div>
-                     </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -200,10 +200,10 @@ const StaffDashboard = () => {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: 'var(--spacing-lg)' }}>
                 <div>
-                     <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'hsl(var(--text-main))' }}>
+                    <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'hsl(var(--text-main))' }}>
                         Staff Dashboard
                     </h1>
-                     <p style={{ color: 'hsl(var(--text-muted))' }}>Overview of {state.clinicSettings.name}</p>
+                    <p style={{ color: 'hsl(var(--text-muted))' }}>Overview of {state.clinicSettings.name}</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>{format(new Date(), 'EEEE, MMMM do')}</div>
@@ -231,7 +231,7 @@ const StaffDashboard = () => {
             </div>
 
             <div className="grid-cols-2" style={{ gridTemplateColumns: '2fr 1fr' }}>
-                
+
                 {/* Today's Schedule */}
                 <div className="card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -252,14 +252,14 @@ const StaffDashboard = () => {
                                     transition: 'transform 0.2s',
                                     cursor: 'pointer'
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
-                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                                 >
                                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                        <div style={{ 
-                                            fontWeight: 700, 
-                                            padding: '0.5rem', 
-                                            background: 'white', 
+                                        <div style={{
+                                            fontWeight: 700,
+                                            padding: '0.5rem',
+                                            background: 'white',
                                             borderRadius: '8px',
                                             minWidth: '80px',
                                             textAlign: 'center',
@@ -286,14 +286,14 @@ const StaffDashboard = () => {
                 </div>
 
                 {/* Quick Actions Panel */}
-                 <div className="card" style={{ height: 'fit-content' }}>
+                <div className="card" style={{ height: 'fit-content' }}>
                     <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>Quick Actions</h3>
                     <div style={{ display: 'grid', gap: '0.75rem' }}>
                         <StaffActionRow icon={Plus} label="New Appointment" />
                         <StaffActionRow icon={User} label="Register Patient" />
                         <StaffActionRow icon={Stethoscope} label="Manage Doctors" />
                     </div>
-                 </div>
+                </div>
             </div>
         </div>
     );
@@ -302,7 +302,7 @@ const StaffDashboard = () => {
 // Helper Components
 
 const QuickActionCard = ({ icon: Icon, label, onClick }) => (
-    <div 
+    <div
         onClick={onClick}
         style={{
             padding: '1.5rem',
@@ -324,10 +324,10 @@ const QuickActionCard = ({ icon: Icon, label, onClick }) => (
             e.currentTarget.style.background = 'hsl(var(--background))';
         }}
     >
-        <div style={{ 
-            display: 'inline-flex', 
-            padding: '0.75rem', 
-            borderRadius: '50%', 
+        <div style={{
+            display: 'inline-flex',
+            padding: '0.75rem',
+            borderRadius: '50%',
             background: 'white',
             color: 'hsl(var(--primary))',
             marginBottom: '0.75rem',
@@ -354,8 +354,8 @@ const StaffActionRow = ({ icon: Icon, label }) => (
         cursor: 'pointer',
         transition: 'background 0.2s'
     }}
-    onMouseEnter={(e) => e.currentTarget.style.background = 'hsl(var(--primary-light))'}
-    onMouseLeave={(e) => e.currentTarget.style.background = 'hsl(var(--background))'}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'hsl(var(--primary-light))'}
+        onMouseLeave={(e) => e.currentTarget.style.background = 'hsl(var(--background))'}
     >
         <Icon size={18} />
         {label}
