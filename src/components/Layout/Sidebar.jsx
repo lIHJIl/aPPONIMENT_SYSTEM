@@ -13,7 +13,7 @@ const Sidebar = () => {
         { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: ['admin', 'patient'] },
         { to: '/appointments', icon: Calendar, label: 'Appointments', roles: ['admin', 'patient'] },
         { to: '/doctors', icon: Stethoscope, label: 'Doctors', roles: ['admin', 'patient'] },
-        { to: '/patients', icon: Users, label: 'Patients', roles: ['admin', 'patient'] },
+        { to: '/patients', icon: Users, label: 'Patients', roles: ['admin'] },
         { to: '/admin', icon: Settings, label: 'Admin Panel', roles: ['admin'] },
     ];
 

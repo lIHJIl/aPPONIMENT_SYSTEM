@@ -30,7 +30,11 @@ function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="appointments" element={<Appointments />} />
               <Route path="doctors" element={<Doctors />} />
-              <Route path="patients" element={<Patients />} />
+              <Route path="patients" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <Patients />
+                </ProtectedRoute>
+              } />
               <Route path="admin" element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminPanel />
