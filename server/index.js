@@ -56,24 +56,24 @@ app.get('/api/patients', (req, res) => {
 });
 
 app.post('/api/patients', (req, res) => {
-    const { name, age, phone, history } = req.body;
+    const { name, age, phone, history, email } = req.body;
     const id = uuidv4();
-    db.run(`INSERT INTO patients (id, name, age, phone, history) VALUES (?, ?, ?, ?, ?)`,
-        [id, name, age, phone, history],
+    db.run(`INSERT INTO patients (id, name, age, phone, history, email) VALUES (?, ?, ?, ?, ?, ?)`,
+        [id, name, age, phone, history, email],
         function (err) {
             if (err) return res.status(500).json({ error: err.message });
-            res.json({ id, name, age, phone, history });
+            res.json({ id, name, age, phone, history, email });
         }
     );
 });
 
 app.put('/api/patients/:id', (req, res) => {
-    const { name, age, phone, history } = req.body;
-    db.run(`UPDATE patients SET name = ?, age = ?, phone = ?, history = ? WHERE id = ?`,
-        [name, age, phone, history, req.params.id],
+    const { name, age, phone, history, email } = req.body;
+    db.run(`UPDATE patients SET name = ?, age = ?, phone = ?, history = ?, email = ? WHERE id = ?`,
+        [name, age, phone, history, email, req.params.id],
         function (err) {
             if (err) return res.status(500).json({ error: err.message });
-            res.json({ id: req.params.id, name, age, phone, history });
+            res.json({ id: req.params.id, name, age, phone, history, email });
         }
     );
 });

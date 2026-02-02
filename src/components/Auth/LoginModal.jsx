@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
 import Modal from '../UI/Modal';
-
 const LoginModal = ({ isOpen, onClose, onLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
         // Basic validation
         if (!username || !password) {
             setError('Please fill in all fields');
             return;
         }
-
         const success = await onLogin(username, password);
         if (success) {
             setUsername('');
@@ -25,7 +21,6 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
             setError('Invalid credentials');
         }
     };
-
     return (
         <Modal
             isOpen={isOpen}
@@ -50,7 +45,6 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
                         {error}
                     </div>
                 )}
-
                 <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Username</label>
                     <input
@@ -62,7 +56,6 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
                         autoFocus
                     />
                 </div>
-
                 <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Password</label>
                     <input
@@ -73,7 +66,6 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
                         style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
                     />
                 </div>
-
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                     <button
                         type="button"
@@ -94,5 +86,4 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
         </Modal>
     );
 };
-
 export default LoginModal;

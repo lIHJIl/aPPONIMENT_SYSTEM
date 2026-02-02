@@ -5,7 +5,7 @@ const dbPath = path.resolve(__dirname, 'clinic.db');
 const db = new sqlite3.Database(dbPath);
 
 console.log("Setting default password...");
-db.run("UPDATE settings SET adminPassword = ? WHERE id = 1", ['andhenemoviedekhiaurgungenegaana gaya'], (err) => {
+db.run("UPDATE settings SET adminPassword = ? WHERE id = 1", ['admin'], (err) => {
     if (err) {
         console.error("Error setting password:", err);
     } else {

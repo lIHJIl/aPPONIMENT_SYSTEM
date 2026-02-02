@@ -32,7 +32,8 @@ const Home = () => {
                 name: formData.name,
                 age: 30, // Default
                 gender: 'Other',
-                contact: formData.email,
+                contact: formData.email, // Keep for backward compat if needed, or remove
+                email: formData.email,
                 history: []
             };
             dispatch({ type: 'ADD_PATIENT', payload: newPatient });
@@ -40,7 +41,7 @@ const Home = () => {
             navigate('/dashboard');
         } else {
             // Login
-            const foundPatient = state.patients.find(p => p.contact === formData.email || p.email === formData.email);
+            const foundPatient = state.patients.find(p => p.email === formData.email || p.contact === formData.email);
             if (foundPatient) {
                 login('patient', foundPatient);
                 navigate('/dashboard');

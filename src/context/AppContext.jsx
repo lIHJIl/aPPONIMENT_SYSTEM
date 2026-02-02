@@ -72,45 +72,160 @@ const reducer = (state, action) => {
 };
 
 export const AppProvider = ({ children }) => {
-    // Initialize state from localStorage or default
-    const init = () => {
+    const [state, dispatch] = useReducer(reducer, initialState);
+    const [loading, setLoading] = useState(true);
+
+    const fetchData = async () => {
         try {
-            const stored = localStorage.getItem('medicare_data');
-            return stored ? JSON.parse(stored) : initialState;
-        } catch (e) {
-            console.error("Failed to load local data", e);
-            return initialState;
+            setLoading(true);
+            const [doctorsRes, patientsRes, appointmentsRes, settingsRes] = await Promise.all([
+                fetch(`${API_BASE}/doctors`),
+                fetch(`${API_BASE}/patients`),
+                fetch(`${API_BASE}/appointments`),
+                fetch(`${API_BASE}/settings`)
+            ]);
+
+            const doctors = await doctorsRes.json();
+            const patients = await patientsRes.json();
+            const appointments = await appointmentsRes.json();
+            const settings = await settingsRes.json();
+
+            // Check for errors in response (assuming server returns {error: ...} on failure, but Promise.all throws on network error)
+            // If server returns array, it's good.
+
+            dispatch({
+                type: 'SET_INITIAL_DATA',
+                payload: {
+                    doctors: Array.isArray(doctors) ? doctors : [],
+                    patients: Array.isArray(patients) ? patients : [],
+                    appointments: Array.isArray(appointments) ? appointments : [],
+                    clinicSettings: settings.error ? initialState.clinicSettings : settings
+                }
+            });
+        } catch (error) {
+            console.error("Failed to fetch data:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const [state, dispatch] = useReducer(reducer, null, init);
-    const [loading, setLoading] = useState(false);
-
-    // Persist state changes
     useEffect(() => {
-        try {
-            localStorage.setItem('medicare_data', JSON.stringify(state));
-        } catch (e) {
-            console.error("Failed to save local data", e);
-        }
-    }, [state]);
+        fetchData();
+    }, []);
 
-    // Simplified dispatch - pure local state management
-    const localDispatch = (action) => {
-        // We can add simple ID generation here since we don't have a backend doing it
-        if (['ADD_PATIENT', 'ADD_DOCTOR', 'ADD_APPOINTMENT'].includes(action.type)) {
-            if (!action.payload.id) {
-                action.payload.id = Date.now(); // Simple mock ID
+    // Async Dispatch Wrapper
+    const asyncDispatch = async (action) => {
+        try {
+            let response;
+            let data;
+
+            switch (action.type) {
+                // --- DOCTORS ---
+                case 'ADD_DOCTOR':
+                    response = await fetch(`${API_BASE}/doctors`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(action.payload)
+                    });
+                    data = await response.json();
+                    if (response.ok) dispatch({ type: 'ADD_DOCTOR', payload: data }); // content from server with ID
+                    break;
+
+                case 'UPDATE_DOCTOR':
+                    response = await fetch(`${API_BASE}/doctors/${action.payload.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(action.payload)
+                    });
+                    data = await response.json();
+                    if (response.ok) dispatch({ type: 'UPDATE_DOCTOR', payload: data });
+                    break;
+
+                case 'DELETE_DOCTOR':
+                    response = await fetch(`${API_BASE}/doctors/${action.payload}`, { method: 'DELETE' });
+                    if (response.ok) dispatch({ type: 'DELETE_DOCTOR', payload: action.payload });
+                    break;
+
+                // --- PATIENTS ---
+                case 'ADD_PATIENT':
+                    response = await fetch(`${API_BASE}/patients`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(action.payload)
+                    });
+                    data = await response.json();
+                    if (response.ok) dispatch({ type: 'ADD_PATIENT', payload: data });
+                    break;
+
+                case 'UPDATE_PATIENT':
+                    response = await fetch(`${API_BASE}/patients/${action.payload.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(action.payload)
+                    });
+                    data = await response.json();
+                    if (response.ok) dispatch({ type: 'UPDATE_PATIENT', payload: data });
+                    break;
+
+                case 'DELETE_PATIENT':
+                    response = await fetch(`${API_BASE}/patients/${action.payload}`, { method: 'DELETE' });
+                    if (response.ok) dispatch({ type: 'DELETE_PATIENT', payload: action.payload });
+                    break;
+
+                // --- APPOINTMENTS ---
+                case 'ADD_APPOINTMENT':
+                    response = await fetch(`${API_BASE}/appointments`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(action.payload)
+                    });
+                    data = await response.json();
+                    if (response.ok) dispatch({ type: 'ADD_APPOINTMENT', payload: data });
+                    break;
+
+                // SPECIAL CASE: Only status update is supported by API for appointments via PUT usually, 
+                // but let's check if we need full update.
+                // Server code: app.put('/api/appointments/:id/status'
+                case 'UPDATE_APPOINTMENT_STATUS':
+                    response = await fetch(`${API_BASE}/appointments/${action.payload.id}/status`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: action.payload.status })
+                    });
+                    data = await response.json();
+                    if (response.ok) dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: data });
+                    break;
+
+                case 'DELETE_APPOINTMENT':
+                    response = await fetch(`${API_BASE}/appointments/${action.payload}`, { method: 'DELETE' });
+                    if (response.ok) dispatch({ type: 'DELETE_APPOINTMENT', payload: action.payload });
+                    break;
+
+                // --- SETTINGS ---
+                case 'UPDATE_SETTINGS':
+                    response = await fetch(`${API_BASE}/settings`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(action.payload)
+                    });
+                    data = await response.json();
+                    if (response.ok) dispatch({ type: 'UPDATE_SETTINGS', payload: data });
+                    break;
+
+                default:
+                    // Fallback for sync actions or unhandled ones
+                    dispatch(action);
             }
+        } catch (error) {
+            console.error("API Action Failed:", action.type, error);
+            alert(`Action failed: ${error.message}`);
         }
-        dispatch(action);
     };
 
     const [darkMode, setDarkMode] = useState(() => {
         try {
             return localStorage.getItem('theme') === 'dark';
         } catch (e) {
-            console.error(e);
             return false;
         }
     });
@@ -130,7 +245,7 @@ export const AppProvider = ({ children }) => {
         });
     };
 
-    const [userRole, setUserRole] = useState(null); // 'admin' | 'patient' | 'staff' | null
+    const [userRole, setUserRole] = useState(null);
 
     const toggleRole = () => {
         setUserRole(prev => prev === 'admin' ? 'patient' : 'admin');
@@ -155,7 +270,7 @@ export const AppProvider = ({ children }) => {
     };
 
     return (
-        <AppContext.Provider value={{ state, dispatch: localDispatch, loading, darkMode, toggleTheme, userRole, toggleRole, login, logout, currentUser }}>
+        <AppContext.Provider value={{ state, dispatch: asyncDispatch, loading, darkMode, toggleTheme, userRole, toggleRole, login, logout, currentUser }}>
             {!loading ? children : <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}
         </AppContext.Provider>
     );

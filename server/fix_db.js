@@ -12,7 +12,7 @@ db.serialize(() => {
         } else {
             console.log("Result: Success - Column added.");
             // Set default password
-            db.run("UPDATE settings SET adminPassword = ? WHERE id = 1", ['andhenemoviedekhiaurgungenegaana gaya'], (err) => {
+            db.run("UPDATE settings SET adminPassword = ? WHERE id = 1", ['admin'], (err) => {
                 if (err) console.error("Error setting default password:", err);
                 else console.log("Default password set.");
             });
