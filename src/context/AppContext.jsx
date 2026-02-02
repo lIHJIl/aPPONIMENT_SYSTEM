@@ -129,7 +129,7 @@ export const AppProvider = ({ children }) => {
                     });
                     data = await response.json();
                     if (response.ok) dispatch({ type: 'ADD_DOCTOR', payload: data }); // content from server with ID
-                    break;
+                    return data;
 
                 case 'UPDATE_DOCTOR':
                     response = await fetch(`${API_BASE}/doctors/${action.payload.id}`, {
@@ -139,7 +139,7 @@ export const AppProvider = ({ children }) => {
                     });
                     data = await response.json();
                     if (response.ok) dispatch({ type: 'UPDATE_DOCTOR', payload: data });
-                    break;
+                    return data;
 
                 case 'DELETE_DOCTOR':
                     response = await fetch(`${API_BASE}/doctors/${action.payload}`, { method: 'DELETE' });
@@ -155,7 +155,7 @@ export const AppProvider = ({ children }) => {
                     });
                     data = await response.json();
                     if (response.ok) dispatch({ type: 'ADD_PATIENT', payload: data });
-                    break;
+                    return data;
 
                 case 'UPDATE_PATIENT':
                     response = await fetch(`${API_BASE}/patients/${action.payload.id}`, {
@@ -165,7 +165,7 @@ export const AppProvider = ({ children }) => {
                     });
                     data = await response.json();
                     if (response.ok) dispatch({ type: 'UPDATE_PATIENT', payload: data });
-                    break;
+                    return data;
 
                 case 'DELETE_PATIENT':
                     response = await fetch(`${API_BASE}/patients/${action.payload}`, { method: 'DELETE' });
@@ -181,7 +181,7 @@ export const AppProvider = ({ children }) => {
                     });
                     data = await response.json();
                     if (response.ok) dispatch({ type: 'ADD_APPOINTMENT', payload: data });
-                    break;
+                    return data;
 
                 // SPECIAL CASE: Only status update is supported by API for appointments via PUT usually, 
                 // but let's check if we need full update.
@@ -194,7 +194,7 @@ export const AppProvider = ({ children }) => {
                     });
                     data = await response.json();
                     if (response.ok) dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: data });
-                    break;
+                    return data;
 
                 case 'DELETE_APPOINTMENT':
                     response = await fetch(`${API_BASE}/appointments/${action.payload}`, { method: 'DELETE' });
@@ -210,7 +210,7 @@ export const AppProvider = ({ children }) => {
                     });
                     data = await response.json();
                     if (response.ok) dispatch({ type: 'UPDATE_SETTINGS', payload: data });
-                    break;
+                    return data;
 
                 default:
                     // Fallback for sync actions or unhandled ones

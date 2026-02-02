@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
+import { ToastProvider } from './components/UI/Toast';
 import MainLayout from './components/Layout/MainLayout';
 import ProtectedRoute from './components/Layout/ProtectedRoute';
 
@@ -23,40 +24,42 @@ const LoadingSpinner = () => (
 function App() {
   return (
     <AppProvider>
-      <Router>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/*" element={<MainLayout />}>
-              <Route path="dashboard" element={
-                <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="appointments" element={
-                <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
-                  <Appointments />
-                </ProtectedRoute>
-              } />
-              <Route path="doctors" element={
-                <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
-                  <Doctors />
-                </ProtectedRoute>
-              } />
-              <Route path="patients" element={
-                <ProtectedRoute allowedRoles={['admin', 'staff']}>
-                  <Patients />
-                </ProtectedRoute>
-              } />
-              <Route path="admin" element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminPanel />
-                </ProtectedRoute>
-              } />
-            </Route>
-          </Routes>
-        </Suspense>
-      </Router>
+      <ToastProvider>
+        <Router>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/*" element={<MainLayout />}>
+                <Route path="dashboard" element={
+                  <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="appointments" element={
+                  <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
+                    <Appointments />
+                  </ProtectedRoute>
+                } />
+                <Route path="doctors" element={
+                  <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
+                    <Doctors />
+                  </ProtectedRoute>
+                } />
+                <Route path="patients" element={
+                  <ProtectedRoute allowedRoles={['admin', 'staff']}>
+                    <Patients />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin" element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AdminPanel />
+                  </ProtectedRoute>
+                } />
+              </Route>
+            </Routes>
+          </Suspense>
+        </Router>
+      </ToastProvider>
     </AppProvider>
   );
 }

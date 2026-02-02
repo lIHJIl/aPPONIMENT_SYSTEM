@@ -1,26 +1,39 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useToast } from '../components/UI/Toast';
 import { Stethoscope, ArrowRight, Shield, Clock, Calendar } from 'lucide-react';
 
 const Home = () => {
     const navigate = useNavigate();
     const { login, state, dispatch } = useApp();
+    const { addToast } = useToast();
     const [userType, setUserType] = useState('patient'); // 'patient' | 'admin'
     const [mode, setMode] = useState('login'); // 'login' | 'signup'
 
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
 
         if (userType === 'admin') {
-            // Simplified Admin Login
-            if (formData.email.includes('admin')) {
-                login('admin', { name: 'Admin User', email: formData.email, id: 'admin1' });
-                navigate('/dashboard');
-            } else {
-                alert('Invalid Admin Credentials (Use "admin" in email)');
+            // Admin Login - Verify via API
+            try {
+                const res = await fetch('http://localhost:3000/api/admin/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: formData.password }) // Use password field for admin pass
+                });
+
+                if (res.ok) {
+                    login('admin', { name: 'Admin User', email: 'admin@medicare.com', id: 'admin1' });
+                    addToast('Welcome Admin', 'success');
+                    navigate('/dashboard');
+                } else {
+                    addToast('Invalid Admin Password', 'error');
+                }
+            } catch (err) {
+                addToast('Login failed', 'error');
             }
             return;
         }
@@ -28,25 +41,47 @@ const Home = () => {
         // Patient Login/Signup
         if (mode === 'signup') {
             const newPatient = {
-                id: Date.now().toString(),
+                id: Date.now().toString(), // Helper ID, server will assign real UUID
                 name: formData.name,
                 age: 30, // Default
                 gender: 'Other',
-                contact: formData.email, // Keep for backward compat if needed, or remove
                 email: formData.email,
+                password: formData.password,
                 history: []
             };
-            dispatch({ type: 'ADD_PATIENT', payload: newPatient });
-            login('patient', newPatient);
-            navigate('/dashboard');
+            try {
+                const createdPatient = await dispatch({ type: 'ADD_PATIENT', payload: newPatient });
+                if (createdPatient && createdPatient.id) {
+                    login('patient', createdPatient);
+                    addToast('Account created successfully!', 'success');
+                    navigate('/dashboard');
+                } else {
+                    addToast('Failed to create account. Please try again.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                addToast('Signup error occurred', 'error');
+            }
         } else {
-            // Login
-            const foundPatient = state.patients.find(p => p.email === formData.email || p.contact === formData.email);
-            if (foundPatient) {
-                login('patient', foundPatient);
-                navigate('/dashboard');
-            } else {
-                alert('Patient not found. Please sign up.');
+            // Secure Login
+            try {
+                const res = await fetch('http://localhost:3000/api/login/patient', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: formData.email, password: formData.password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    login('patient', data.user);
+                    addToast(`Welcome back, ${data.user.name}!`, 'success');
+                    navigate('/dashboard');
+                } else {
+                    addToast(data.error || 'Login failed', 'error');
+                }
+            } catch (err) {
+                addToast('Network error during login', 'error');
             }
         }
     };
@@ -84,7 +119,7 @@ const Home = () => {
                             Book appointments with top specialists in seconds. Secure, fast, and built for your peace of mind.
                         </p>
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.5rem 1rem', borderRadius: '50px', boxShadow: 'var(--shadow-sm)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'hsl(var(--surface))', padding: '0.5rem 1rem', borderRadius: '50px', boxShadow: 'var(--shadow-sm)' }}>
                                 <div style={{ width: '10px', height: '10px', background: 'hsl(var(--success))', borderRadius: '50%' }} />
                                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Available Now</span>
                             </div>
@@ -164,7 +199,7 @@ const Home = () => {
             </main>
 
             {/* Features (Bottom) */}
-            <div id="features" style={{ background: 'white', padding: '4rem 0' }}>
+            <div id="features" style={{ background: 'hsl(var(--surface))', padding: '4rem 0' }}>
                 <div className="container grid-cols-3" style={{ gap: '2rem' }}>
                     <FeatureCard icon={Clock} title="Fast Booking" text="Book appointments in less than 60 seconds." />
                     <FeatureCard icon={Shield} title="Secure Records" text="Your medical history is safe and private." />

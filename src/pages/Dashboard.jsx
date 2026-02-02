@@ -259,7 +259,7 @@ const StaffDashboard = () => {
                                         <div style={{
                                             fontWeight: 700,
                                             padding: '0.5rem',
-                                            background: 'white',
+                                            background: 'hsl(var(--surface))',
                                             borderRadius: '8px',
                                             minWidth: '80px',
                                             textAlign: 'center',
@@ -328,7 +328,7 @@ const QuickActionCard = ({ icon: Icon, label, onClick }) => (
             display: 'inline-flex',
             padding: '0.75rem',
             borderRadius: '50%',
-            background: 'white',
+            background: 'hsl(var(--surface))',
             color: 'hsl(var(--primary))',
             marginBottom: '0.75rem',
             boxShadow: 'var(--shadow-sm)'
