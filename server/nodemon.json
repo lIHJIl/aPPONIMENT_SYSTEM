@@ -1,0 +1,7 @@
+{
+    "ignore": [
+        "clinic.db",
+        "clinic.db-journal",
+        "clinic.db-wal"
+    ]
+}
