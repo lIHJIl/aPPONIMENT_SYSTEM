@@ -28,7 +28,9 @@ const initDb = () => {
             name TEXT NOT NULL,
             age INTEGER,
             phone TEXT,
-            history TEXT
+            history TEXT,
+            email TEXT,
+            password TEXT
         )`);
 
         // Appointments Table
@@ -63,6 +65,10 @@ const initDb = () => {
         db.run("ALTER TABLE settings ADD COLUMN slotDuration INTEGER DEFAULT 30", (err) => { });
         db.run("ALTER TABLE settings ADD COLUMN defaultConsultationFee REAL DEFAULT 50.0", (err) => { });
         db.run("ALTER TABLE settings ADD COLUMN adminPassword TEXT DEFAULT 'admin'", (err) => { });
+
+        // Patients table migrations (email & password added later)
+        db.run("ALTER TABLE patients ADD COLUMN email TEXT", (err) => { });
+        db.run("ALTER TABLE patients ADD COLUMN password TEXT", (err) => { });
 
         // Stripe Payments & Pricing Migrations
         db.run("ALTER TABLE appointments ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'unpaid'", () => { });
