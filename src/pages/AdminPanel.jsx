@@ -18,7 +18,9 @@ const AdminPanel = () => {
 
     return (
         <div style={{ maxWidth: '600px' }}>
-            <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: 'var(--spacing-lg)' }}>Admin Settings</h1>
+            <div className="page-header">
+                <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: 0 }}>Admin Settings</h1>
+            </div>
 
             <div className="card">
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -32,7 +34,7 @@ const AdminPanel = () => {
                         />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div className="form-row">
                         <div style={{ flex: 1 }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Working Hours Start</label>
                             <input
@@ -55,7 +57,7 @@ const AdminPanel = () => {
 
 
 
-                    <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div className="form-row">
                         <div style={{ flex: 1 }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Break Start</label>
                             <input
@@ -122,7 +124,7 @@ const AdminPanel = () => {
                     } catch (err) {
                         alert('Error updating password');
                     }
-                }} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+                }} className="form-row" style={{ alignItems: 'flex-end' }}>
                     <div style={{ flex: 1 }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>New Password</label>
                         <input

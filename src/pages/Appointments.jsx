@@ -102,7 +102,7 @@ const Appointments = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+            <div className="page-header">
                 <div>
                     <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Appointments</h1>
                     <p style={{ color: 'hsl(var(--text-muted))' }}>Schedule and manage visits</p>
@@ -113,7 +113,7 @@ const Appointments = () => {
                 </button>
             </div>
 
-            <div style={{ background: 'hsl(var(--surface))', borderRadius: '12px', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
+            <div className="table-container" style={{ background: 'hsl(var(--surface))', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                         <tr>
@@ -286,7 +286,7 @@ const Appointments = () => {
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                    <div className="form-row" style={{ marginTop: '1rem' }}>
                         <button type="button" onClick={() => setIsModalOpen(false)} className="btn" style={{ flex: 1, border: '1px solid #ddd' }}>Cancel</button>
                         <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Book Appointment</button>
                     </div>

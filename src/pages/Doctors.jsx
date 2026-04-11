@@ -49,7 +49,7 @@ const Doctors = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+            <div className="page-header">
                 <div>
                     <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>{userRole === 'admin' ? 'Manage Doctors' : 'Meet Our Doctors'}</h1>
                     <p style={{ color: 'hsl(var(--text-muted))' }}>{userRole === 'admin' ? 'Manage your medical team' : 'Our specialist team is here to help you.'}</p>
@@ -173,7 +173,7 @@ const Doctors = () => {
                         />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                    <div className="form-row" style={{ marginTop: '1rem' }}>
                         <button type="button" onClick={() => setIsModalOpen(false)} className="btn" style={{ flex: 1, border: '1px solid #ddd' }}>Cancel</button>
                         <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>{editingDoctor ? 'Update' : 'Add'} Doctor</button>
                     </div>

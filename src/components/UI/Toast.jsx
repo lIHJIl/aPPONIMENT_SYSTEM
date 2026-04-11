@@ -21,20 +21,10 @@ export const ToastProvider = ({ children }) => {
     return (
         <ToastContext.Provider value={{ addToast }}>
             {children}
-            <div style={{ position: 'fixed', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', gap: '10px', zIndex: 1000 }}>
+            <div className="toast-container">
                 {toasts.map(toast => (
-                    <div key={toast.id} style={{
-                        minWidth: '300px',
-                        background: 'hsl(var(--surface))',
-                        color: 'hsl(var(--text-main))',
-                        padding: '1rem',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        borderLeft: `5px solid ${toast.type === 'success' ? 'hsl(var(--success))' : toast.type === 'error' ? 'hsl(var(--danger))' : 'hsl(var(--primary))'}`,
-                        animation: 'slideIn 0.3s ease-out'
+                    <div key={toast.id} className="toast-item" style={{
+                        borderLeft: `5px solid ${toast.type === 'success' ? 'hsl(var(--success))' : toast.type === 'error' ? 'hsl(var(--danger))' : 'hsl(var(--primary))'}`
                     }}>
                         {toast.type === 'success' && <CheckCircle size={20} color="hsl(var(--success))" />}
                         {toast.type === 'error' && <AlertCircle size={20} color="hsl(var(--danger))" />}
@@ -42,7 +32,7 @@ export const ToastProvider = ({ children }) => {
 
                         <span style={{ flex: 1, fontWeight: 500 }}>{toast.message}</span>
 
-                        <button onClick={() => removeToast(toast.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--text-muted))' }}>
+                        <button onClick={() => removeToast(toast.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--text-muted))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <X size={16} />
                         </button>
                     </div>

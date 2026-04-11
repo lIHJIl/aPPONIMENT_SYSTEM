@@ -198,7 +198,7 @@ const StaffDashboard = () => {
     return (
         <div>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: 'var(--spacing-lg)' }}>
+            <div className="page-header">
                 <div>
                     <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'hsl(var(--text-main))' }}>
                         Staff Dashboard
@@ -230,7 +230,7 @@ const StaffDashboard = () => {
                 ))}
             </div>
 
-            <div className="grid-cols-2" style={{ gridTemplateColumns: '2fr 1fr' }}>
+            <div className="grid-cols-2">
 
                 {/* Today's Schedule */}
                 <div className="card">

@@ -49,7 +49,7 @@ const Patients = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-lg)' }}>
+            <div className="page-header">
                 <div>
                     <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Patients</h1>
                     <p style={{ color: 'hsl(var(--text-muted))' }}>Manage patient records</p>
@@ -64,7 +64,7 @@ const Patients = () => {
                 <div className="grid-cols-2">
                     {state.patients.map(patient => (
                         <div key={patient.id} className="card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div className="card-header">
                                 <div style={{ display: 'flex', gap: '1rem' }}>
                                     <div style={{
                                         width: '50px',
@@ -138,7 +138,7 @@ const Patients = () => {
                             style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
                         />
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div className="form-row">
                         <div style={{ flex: 1 }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Age</label>
                             <input
