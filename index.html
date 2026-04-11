@@ -2,18 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>apponiment-system</title>
+    <title>MediCare - Clinic Appointment System</title>
   </head>
   <body>
     <div id="root"></div>
     <script>
+      function showDevError(title, detail) {
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'color:red;padding:20px;font-family:monospace;background:white;position:fixed;top:0;left:0;right:0;z-index:9999;';
+        var heading = document.createElement('h1');
+        heading.textContent = title;
+        var pre = document.createElement('pre');
+        pre.textContent = String(detail);
+        wrapper.appendChild(heading);
+        wrapper.appendChild(pre);
+        document.body.appendChild(wrapper);
+      }
       window.addEventListener('error', function(event) {
-        document.body.innerHTML += '<div style="color:red; padding:20px; font-family:monospace; background:white;"><h1>Global Error Caught</h1><pre>' + event.error + '</pre></div>';
+        showDevError('Global Error Caught', event.error);
       });
       window.addEventListener('unhandledrejection', function(event) {
-        document.body.innerHTML += '<div style="color:red; padding:20px; font-family:monospace; background:white;"><h1>Unhandled Promise Rejection</h1><pre>' + event.reason + '</pre></div>';
+        showDevError('Unhandled Promise Rejection', event.reason);
       });
     </script>
     <script type="module" src="/src/main.jsx"></script>

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Stethoscope, Settings, Moon, Sun, X } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Stethoscope, Settings, Moon, Sun, X, LogOut } from 'lucide-react';
 import ClinicClock from '../UI/ClinicClock';
-import LoginModal from '../Auth/LoginModal';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { darkMode, toggleTheme, userRole, logout } = useApp();
@@ -84,7 +83,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                         border: 'none'
                     }}
                 >
-                    <Users size={18} />
+                    <LogOut size={18} />
                     Log Out
                 </button>
                 <button

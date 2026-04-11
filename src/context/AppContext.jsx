@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, useState } fro
 
 const AppContext = createContext();
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 const initialState = {
     doctors: [],
@@ -75,14 +75,22 @@ export const AppProvider = ({ children }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [loading, setLoading] = useState(true);
 
-    const fetchData = async () => {
+    const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+
+    const authFetch = (url, options = {}) => {
+        const headers = { ...options.headers };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        return fetch(url, { ...options, headers });
+    };
+
+    const fetchData = async (signal) => {
         try {
             setLoading(true);
             const [doctorsRes, patientsRes, appointmentsRes, settingsRes] = await Promise.all([
-                fetch(`${API_BASE}/doctors`),
-                fetch(`${API_BASE}/patients`),
-                fetch(`${API_BASE}/appointments`),
-                fetch(`${API_BASE}/settings`)
+                authFetch(`${API_BASE}/doctors`, { signal }),
+                authFetch(`${API_BASE}/patients`, { signal }),
+                authFetch(`${API_BASE}/appointments`, { signal }),
+                authFetch(`${API_BASE}/settings`, { signal })
             ]);
 
             const doctors = await doctorsRes.json();
@@ -103,15 +111,19 @@ export const AppProvider = ({ children }) => {
                 }
             });
         } catch (error) {
-            console.error("Failed to fetch data:", error);
+            if (error.name !== 'AbortError') {
+                console.error("Failed to fetch data:", error);
+            }
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        const controller = new AbortController();
+        fetchData(controller.signal);
+        return () => controller.abort();
+    }, [token]); // Refetch if token changes
 
     // Async Dispatch Wrapper
     const asyncDispatch = async (action) => {
@@ -122,7 +134,7 @@ export const AppProvider = ({ children }) => {
             switch (action.type) {
                 // --- DOCTORS ---
                 case 'ADD_DOCTOR':
-                    response = await fetch(`${API_BASE}/doctors`, {
+                    response = await authFetch(`${API_BASE}/doctors`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(action.payload)
@@ -132,7 +144,7 @@ export const AppProvider = ({ children }) => {
                     return data;
 
                 case 'UPDATE_DOCTOR':
-                    response = await fetch(`${API_BASE}/doctors/${action.payload.id}`, {
+                    response = await authFetch(`${API_BASE}/doctors/${action.payload.id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(action.payload)
@@ -142,13 +154,13 @@ export const AppProvider = ({ children }) => {
                     return data;
 
                 case 'DELETE_DOCTOR':
-                    response = await fetch(`${API_BASE}/doctors/${action.payload}`, { method: 'DELETE' });
+                    response = await authFetch(`${API_BASE}/doctors/${action.payload}`, { method: 'DELETE' });
                     if (response.ok) dispatch({ type: 'DELETE_DOCTOR', payload: action.payload });
                     break;
 
                 // --- PATIENTS ---
                 case 'ADD_PATIENT':
-                    response = await fetch(`${API_BASE}/patients`, {
+                    response = await authFetch(`${API_BASE}/patients`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(action.payload)
@@ -158,7 +170,7 @@ export const AppProvider = ({ children }) => {
                     return data;
 
                 case 'UPDATE_PATIENT':
-                    response = await fetch(`${API_BASE}/patients/${action.payload.id}`, {
+                    response = await authFetch(`${API_BASE}/patients/${action.payload.id}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(action.payload)
@@ -168,13 +180,13 @@ export const AppProvider = ({ children }) => {
                     return data;
 
                 case 'DELETE_PATIENT':
-                    response = await fetch(`${API_BASE}/patients/${action.payload}`, { method: 'DELETE' });
+                    response = await authFetch(`${API_BASE}/patients/${action.payload}`, { method: 'DELETE' });
                     if (response.ok) dispatch({ type: 'DELETE_PATIENT', payload: action.payload });
                     break;
 
                 // --- APPOINTMENTS ---
                 case 'ADD_APPOINTMENT':
-                    response = await fetch(`${API_BASE}/appointments`, {
+                    response = await authFetch(`${API_BASE}/appointments`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(action.payload)
@@ -187,7 +199,7 @@ export const AppProvider = ({ children }) => {
                 // but let's check if we need full update.
                 // Server code: app.put('/api/appointments/:id/status'
                 case 'UPDATE_APPOINTMENT_STATUS':
-                    response = await fetch(`${API_BASE}/appointments/${action.payload.id}/status`, {
+                    response = await authFetch(`${API_BASE}/appointments/${action.payload.id}/status`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ status: action.payload.status })
@@ -197,13 +209,13 @@ export const AppProvider = ({ children }) => {
                     return data;
 
                 case 'DELETE_APPOINTMENT':
-                    response = await fetch(`${API_BASE}/appointments/${action.payload}`, { method: 'DELETE' });
+                    response = await authFetch(`${API_BASE}/appointments/${action.payload}`, { method: 'DELETE' });
                     if (response.ok) dispatch({ type: 'DELETE_APPOINTMENT', payload: action.payload });
                     break;
 
                 // --- SETTINGS ---
                 case 'UPDATE_SETTINGS':
-                    response = await fetch(`${API_BASE}/settings`, {
+                    response = await authFetch(`${API_BASE}/settings`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(action.payload)
@@ -218,7 +230,8 @@ export const AppProvider = ({ children }) => {
             }
         } catch (error) {
             console.error("API Action Failed:", action.type, error);
-            alert(`Action failed: ${error.message}`);
+            // Surface the error to the caller instead of blocking the UI with alert()
+            throw error;
         }
     };
 
@@ -245,11 +258,7 @@ export const AppProvider = ({ children }) => {
         });
     };
 
-    const [userRole, setUserRole] = useState(null);
-
-    const toggleRole = () => {
-        setUserRole(prev => prev === 'admin' ? 'patient' : 'admin');
-    };
+    const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || null);
 
     useEffect(() => {
         if (darkMode) {
@@ -257,20 +266,34 @@ export const AppProvider = ({ children }) => {
         }
     }, []);
 
-    const [currentUser, setCurrentUser] = useState(null);
+    const [currentUser, setCurrentUser] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('user')) || null;
+        } catch { return null; }
+    });
 
-    const login = (role, userData = null) => {
+    const login = (role, userData = null, jwtToken = null) => {
         setUserRole(role);
         setCurrentUser(userData);
+        localStorage.setItem('userRole', role);
+        if (userData) localStorage.setItem('user', JSON.stringify(userData));
+        if (jwtToken) {
+            setToken(jwtToken);
+            localStorage.setItem('token', jwtToken);
+        }
     };
 
     const logout = () => {
         setUserRole(null);
         setCurrentUser(null);
+        setToken(null);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
     };
 
     return (
-        <AppContext.Provider value={{ state, dispatch: asyncDispatch, loading, darkMode, toggleTheme, userRole, toggleRole, login, logout, currentUser }}>
+        <AppContext.Provider value={{ state, dispatch: asyncDispatch, loading, darkMode, toggleTheme, userRole, login, logout, currentUser }}>
             {!loading ? children : <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}
         </AppContext.Provider>
     );

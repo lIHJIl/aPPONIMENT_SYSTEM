@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, CheckCircle, XCircle, Calendar, Clock } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 import Modal from '../components/UI/Modal';
 import { format, parseISO, isSameMinute, addMinutes, parse, isWithinInterval } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const Appointments = () => {
     const { state, dispatch, userRole, currentUser } = useApp();
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [processing, setProcessing] = useState(false);
 
     const [formData, setFormData] = useState({
         doctorId: '',
@@ -39,7 +44,7 @@ const Appointments = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const selectedDate = new Date(formData.date);
@@ -67,9 +72,19 @@ const Appointments = () => {
             alert(`Doctor is not available at this time (${duration} min slot conflict).`);
             return;
         }
-        dispatch({ type: 'ADD_APPOINTMENT', payload: formData });
-        setIsModalOpen(false);
-        setFormData({ doctorId: '', patientId: userRole === 'patient' && currentUser ? currentUser.id : '', date: '', reason: '' });
+        setProcessing(true);
+        try {
+            const res = await dispatch({ type: 'ADD_APPOINTMENT', payload: formData });
+            setIsModalOpen(false);
+            setFormData({ doctorId: '', patientId: userRole === 'patient' && currentUser ? currentUser.id : '', date: '', reason: '' });
+            if (res && res.id) {
+                navigate(`/payment/${res.id}`);
+            }
+        } catch (err) {
+            alert('Failed to book appointment: ' + err.message);
+        } finally {
+            setProcessing(false);
+        }
     };
 
     const handleStatusChange = (id, status) => {
@@ -79,6 +94,34 @@ const Appointments = () => {
     const handleDelete = (id) => {
         if (confirm('Delete this appointment record?')) {
             dispatch({ type: 'DELETE_APPOINTMENT', payload: id });
+        }
+    };
+
+    const handleRefund = async (id) => {
+        if (!confirm('Are you sure you want to refund this payment?')) return;
+        try {
+            const payRes = await fetch(`${API_BASE}/appointments/${id}/payment`);
+            const payData = await payRes.json();
+            if (!payData.payments || payData.payments.length === 0) {
+                 alert("No payments found"); return;
+            }
+            // Refund the most recent successful payment
+            const validPayment = payData.payments.find(p => p.status === 'succeeded');
+            if (!validPayment) {
+                 alert("No valid successful payment to refund."); return;
+            }
+            
+            const res = await fetch(`${API_BASE}/admin/payments/${validPayment.id}/refund`, { method: 'POST' });
+            if (res.ok) {
+                 alert('Refund successful');
+                 // Simply trigger UI update
+                 window.location.reload(); 
+            } else {
+                 const errData = await res.json();
+                 alert('Refund failed: ' + errData.error);
+            }
+        } catch (e) {
+            alert('Error processing refund: ' + e.message);
         }
     };
 
@@ -121,6 +164,7 @@ const Appointments = () => {
                             <th style={{ padding: '1rem', fontWeight: 600 }}>Patient</th>
                             <th style={{ padding: '1rem', fontWeight: 600 }}>Doctor</th>
                             <th style={{ padding: '1rem', fontWeight: 600 }}>Status</th>
+                            <th style={{ padding: '1rem', fontWeight: 600 }}>Payment</th>
                             <th style={{ padding: '1rem', fontWeight: 600 }}>Actions</th>
                         </tr>
                     </thead>
@@ -148,6 +192,28 @@ const Appointments = () => {
                                     </span>
                                 </td>
                                 <td style={{ padding: '1rem' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+                                        <span style={{
+                                            padding: '0.25rem 0.75rem',
+                                            borderRadius: '20px',
+                                            fontSize: '0.875rem',
+                                            fontWeight: 500,
+                                            backgroundColor: apt.payment_status === 'paid' ? '#dcfce7' : apt.payment_status === 'partial' ? '#fef3c7' : '#fee2e2',
+                                            color: apt.payment_status === 'paid' ? '#16a34a' : apt.payment_status === 'partial' ? '#d97706' : '#dc2626'
+                                        }}>
+                                            {apt.payment_status === 'paid' ? 'Paid in Full' : apt.payment_status === 'partial' ? 'Partially Paid' : 'Payment Due'}
+                                        </span>
+                                        {apt.payment_status === 'partial' && userRole === 'patient' && (
+                                            <button 
+                                                onClick={() => navigate(`/pay-remainder/${apt.id}`)} 
+                                                style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', background: 'transparent', border: '1px solid currentColor', borderRadius: '4px', cursor: 'pointer', color: 'hsl(var(--primary))' }}
+                                            >
+                                                Pay Remainder
+                                            </button>
+                                        )}
+                                    </div>
+                                </td>
+                                <td style={{ padding: '1rem' }}>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                                         {['admin', 'staff'].includes(userRole) && (
                                             <>
@@ -164,6 +230,11 @@ const Appointments = () => {
                                                 <button title="Delete" onClick={() => handleDelete(apt.id)} className="btn" style={{ padding: '0.25rem', color: '#9ca3af' }}>
                                                     <Trash2 size={18} />
                                                 </button>
+                                                {userRole === 'admin' && (apt.payment_status === 'paid' || apt.payment_status === 'partial') && (
+                                                    <button title="Refund" onClick={() => handleRefund(apt.id)} className="btn" style={{ padding: '0.25rem 0.5rem', color: 'hsl(var(--primary))', border: '1px solid currentColor', fontSize: '0.75rem', borderRadius: '4px' }}>
+                                                        Refund
+                                                    </button>
+                                                )}
                                             </>
                                         )}
                                     </div>
@@ -288,7 +359,7 @@ const Appointments = () => {
 
                     <div className="form-row" style={{ marginTop: '1rem' }}>
                         <button type="button" onClick={() => setIsModalOpen(false)} className="btn" style={{ flex: 1, border: '1px solid #ddd' }}>Cancel</button>
-                        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Book Appointment</button>
+                        <button type="submit" disabled={processing} className="btn btn-primary" style={{ flex: 1 }}>{processing ? 'Reserving slot...' : 'Confirm Appointment'}</button>
                     </div>
                 </form>
             </Modal>

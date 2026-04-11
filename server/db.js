@@ -53,6 +53,7 @@ const initDb = () => {
             breakStart TEXT,
             breakEnd TEXT,
             slotDuration INTEGER DEFAULT 30,
+            defaultConsultationFee REAL DEFAULT 50.0,
             adminPassword TEXT
         )`);
 
@@ -60,13 +61,51 @@ const initDb = () => {
         db.run("ALTER TABLE settings ADD COLUMN breakStart TEXT", (err) => { });
         db.run("ALTER TABLE settings ADD COLUMN breakEnd TEXT", (err) => { });
         db.run("ALTER TABLE settings ADD COLUMN slotDuration INTEGER DEFAULT 30", (err) => { });
+        db.run("ALTER TABLE settings ADD COLUMN defaultConsultationFee REAL DEFAULT 50.0", (err) => { });
         db.run("ALTER TABLE settings ADD COLUMN adminPassword TEXT DEFAULT 'admin'", (err) => { });
+
+        // Stripe Payments & Pricing Migrations
+        db.run("ALTER TABLE appointments ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'unpaid'", () => { });
+        db.run("ALTER TABLE appointments ADD COLUMN booking_status TEXT NOT NULL DEFAULT 'pending_payment'", () => { });
+        db.run("ALTER TABLE appointments ADD COLUMN total_fee REAL NOT NULL DEFAULT 0.0", () => { });
+        db.run("ALTER TABLE appointments ADD COLUMN amount_paid REAL NOT NULL DEFAULT 0.0", () => { });
+        db.run("ALTER TABLE appointments ADD COLUMN balance_due REAL GENERATED ALWAYS AS (total_fee - amount_paid) VIRTUAL", () => { });
+        db.run("ALTER TABLE doctors ADD COLUMN consultation_fee REAL NOT NULL DEFAULT 50.0", () => { });
+
+        db.run(`CREATE TABLE IF NOT EXISTS payments (
+            id TEXT PRIMARY KEY,
+            appointment_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            stripe_payment_intent_id TEXT NOT NULL,
+            stripe_charge_id TEXT,
+            amount REAL NOT NULL,
+            currency TEXT NOT NULL DEFAULT 'inr',
+            payment_type TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
+        )`);
+
+        db.run(`CREATE TABLE IF NOT EXISTS slot_holds (
+            id TEXT PRIMARY KEY,
+            appointment_id TEXT NOT NULL UNIQUE,
+            user_id TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
+        )`);
+
+        // Indexes for performance
+        db.run('CREATE INDEX IF NOT EXISTS idx_appointments_doctor_date ON appointments(doctorId, date)');
+        db.run('CREATE INDEX IF NOT EXISTS idx_appointments_user ON appointments(patientId)');
+        db.run('CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status)');
 
         // Initialize default settings if not exists
         db.get("SELECT * FROM settings WHERE id = 1", (err, row) => {
             if (!row) {
-                db.run(`INSERT INTO settings (id, name, workingHoursStart, workingHoursEnd, breakStart, breakEnd, slotDuration, adminPassword) 
-                        VALUES (1, 'MediCare Clinic', '09:00', '17:00', '13:00', '14:00', 30, 'admin')`);
+                db.run(`INSERT INTO settings (id, name, workingHoursStart, workingHoursEnd, breakStart, breakEnd, slotDuration, defaultConsultationFee, adminPassword) 
+                        VALUES (1, 'MediCare Clinic', '09:00', '17:00', '13:00', '14:00', 30, 50.0, 'admin')`);
             }
         });
     });

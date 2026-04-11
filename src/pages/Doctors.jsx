@@ -12,7 +12,8 @@ const Doctors = () => {
         name: '',
         specialty: '',
         experience: '',
-        image: ''
+        image: '',
+        consultation_fee: 50.0
     });
 
     const handleOpenModal = (doctor = null) => {
@@ -22,11 +23,12 @@ const Doctors = () => {
                 name: doctor.name,
                 specialty: doctor.specialty,
                 experience: doctor.experience,
-                image: doctor.image || ''
+                image: doctor.image || '',
+                consultation_fee: doctor.consultation_fee || 50.0
             });
         } else {
             setEditingDoctor(null);
-            setFormData({ name: '', specialty: '', experience: '', image: '' });
+            setFormData({ name: '', specialty: '', experience: '', image: '', consultation_fee: 50.0 });
         }
         setIsModalOpen(true);
     };
@@ -97,8 +99,9 @@ const Doctors = () => {
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: '1rem', color: 'hsl(var(--text-muted))', fontSize: '0.9rem' }}>
+                        <div style={{ marginBottom: '1rem', color: 'hsl(var(--text-muted))', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
                             <p>Experience: {doctor.experience} years</p>
+                            <p style={{ fontWeight: 600, color: 'hsl(var(--text-main))' }}>Fee: ₹{Number(doctor.consultation_fee || 50).toFixed(2)}</p>
                         </div>
 
                         {userRole === 'admin' && (
@@ -159,6 +162,18 @@ const Doctors = () => {
                             placeholder="10"
                             value={formData.experience}
                             onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                        />
+                    </div>
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Consultation Fee (₹)</label>
+                        <input
+                            required
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={formData.consultation_fee}
+                            onChange={(e) => setFormData({ ...formData, consultation_fee: parseFloat(e.target.value) || 0 })}
                             style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
                         />
                     </div>

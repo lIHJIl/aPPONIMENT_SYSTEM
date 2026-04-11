@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+
 const AdminPanel = () => {
     const { state, dispatch } = useApp();
     const [settings, setSettings] = useState(state.clinicSettings);
@@ -78,19 +80,33 @@ const AdminPanel = () => {
                         </div>
                     </div>
 
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Appointment Slot Duration</label>
-                        <select
-                            value={settings.slotDuration || 30}
-                            onChange={(e) => setSettings({ ...settings, slotDuration: parseInt(e.target.value) })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
-                        >
-                            <option value={15}>15 Minutes</option>
-                            <option value={20}>20 Minutes</option>
-                            <option value={30}>30 Minutes</option>
-                            <option value={45}>45 Minutes</option>
-                            <option value={60}>1 Hour</option>
-                        </select>
+                    <div className="form-row">
+                        <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Appointment Slot Duration</label>
+                            <select
+                                value={settings.slotDuration || 30}
+                                onChange={(e) => setSettings({ ...settings, slotDuration: parseInt(e.target.value) })}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                            >
+                                <option value={15}>15 Minutes</option>
+                                <option value={20}>20 Minutes</option>
+                                <option value={30}>30 Minutes</option>
+                                <option value={45}>45 Minutes</option>
+                                <option value={60}>1 Hour</option>
+                            </select>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Global Default Consultation Fee (₹)</label>
+                            <input
+                                required
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={settings.defaultConsultationFee !== undefined ? settings.defaultConsultationFee : 50.0}
+                                onChange={(e) => setSettings({ ...settings, defaultConsultationFee: parseFloat(e.target.value) || 0 })}
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                            />
+                        </div>
                     </div>
 
                     <div style={{ paddingTop: '1rem', borderTop: '1px solid #eee' }}>
@@ -110,7 +126,7 @@ const AdminPanel = () => {
                     if (!newPassword) return;
 
                     try {
-                        const res = await fetch('http://localhost:3000/api/admin/password', {
+                        const res = await fetch(`${API_BASE}/admin/password`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ newPassword })

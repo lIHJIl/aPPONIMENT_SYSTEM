@@ -4,6 +4,7 @@ import { AppProvider } from './context/AppContext';
 import { ToastProvider } from './components/UI/Toast';
 import MainLayout from './components/Layout/MainLayout';
 import ProtectedRoute from './components/Layout/ProtectedRoute';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy Load Pages for Performance
 const Home = lazy(() => import('./pages/Home'));
@@ -12,6 +13,9 @@ const Appointments = lazy(() => import('./pages/Appointments'));
 const Doctors = lazy(() => import('./pages/Doctors'));
 const Patients = lazy(() => import('./pages/Patients'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const PaymentPage = lazy(() => import('./pages/PaymentPage'));
+const PayRemainderPage = lazy(() => import('./pages/PayRemainderPage'));
+const BookingConfirmedPage = lazy(() => import('./pages/BookingConfirmedPage'));
 
 // Loading Fallback
 const LoadingSpinner = () => (
@@ -27,12 +31,28 @@ function App() {
       <ToastProvider>
         <Router>
           <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/" element={<Home />} />
               <Route path="/*" element={<MainLayout />}>
                 <Route path="dashboard" element={
                   <ProtectedRoute allowedRoles={['admin', 'patient', 'staff']}>
                     <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="payment/:id" element={
+                  <ProtectedRoute allowedRoles={['patient']}>
+                    <PaymentPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="pay-remainder/:id" element={
+                  <ProtectedRoute allowedRoles={['patient']}>
+                    <PayRemainderPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="booking-confirmed/:id" element={
+                  <ProtectedRoute allowedRoles={['patient']}>
+                    <BookingConfirmedPage />
                   </ProtectedRoute>
                 } />
                 <Route path="appointments" element={
@@ -56,7 +76,8 @@ function App() {
                   </ProtectedRoute>
                 } />
               </Route>
-            </Routes>
+              </Routes>
+            </ErrorBoundary>
           </Suspense>
         </Router>
       </ToastProvider>

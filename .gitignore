@@ -1,24 +1,93 @@
-# Logs
-logs
-*.log
+# ============================================================
+#  MediCare Clinic — .gitignore
+#  Keeps secrets, build artifacts, and local state out of git
+# ============================================================
+
+# ---------------------------
+# Environment variables & secrets (NEVER commit these)
+# ---------------------------
+.env
+.env.*
+!.env.example          # keep the example template committed
+
+# ---------------------------
+# SQLite database files (contain real patient/appointment data)
+# ---------------------------
+*.db
+*.sqlite
+*.sqlite3
+server/clinic.db
+
+# ---------------------------
+# Stripe & payment secrets
+# ---------------------------
+# (covered by .env above, but explicit for clarity)
+stripe-keys.txt
+stripe-webhook-secret.txt
+
+# ---------------------------
+# Node / NPM
+# ---------------------------
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+package-lock.json   # optional — remove this line if you want lock files committed
 
-node_modules
-dist
-dist-ssr
+# ---------------------------
+# Build output
+# ---------------------------
+dist/
+dist-ssr/
+build/
+.vite/
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# ---------------------------
+# Logs & runtime files
+# ---------------------------
+logs/
+*.log
+pids/
+*.pid
+*.seed
+
+# ---------------------------
+# OS-generated files
+# ---------------------------
 .DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ---------------------------
+# Editor & IDE files
+# ---------------------------
+.vscode/*
+!.vscode/extensions.json   # allow shared extension recommendations
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+*.bak
+
+# ---------------------------
+# Test & coverage artifacts
+# ---------------------------
+coverage/
+.nyc_output/
+test-results/
+
+# ---------------------------
+# Temporary files
+# ---------------------------
+tmp/
+temp/
+*.tmp
+*.temp
