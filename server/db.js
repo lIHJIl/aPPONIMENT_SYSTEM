@@ -75,7 +75,7 @@ const initDb = () => {
         db.run("ALTER TABLE appointments ADD COLUMN booking_status TEXT NOT NULL DEFAULT 'pending_payment'", () => { });
         db.run("ALTER TABLE appointments ADD COLUMN total_fee REAL NOT NULL DEFAULT 0.0", () => { });
         db.run("ALTER TABLE appointments ADD COLUMN amount_paid REAL NOT NULL DEFAULT 0.0", () => { });
-        db.run("ALTER TABLE appointments ADD COLUMN balance_due REAL GENERATED ALWAYS AS (total_fee - amount_paid) VIRTUAL", () => { });
+        // NOTE: balance_due is computed in JS as (total_fee - amount_paid); no virtual column needed
         db.run("ALTER TABLE doctors ADD COLUMN consultation_fee REAL NOT NULL DEFAULT 50.0", () => { });
 
         db.run(`CREATE TABLE IF NOT EXISTS payments (

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, CheckCircle, XCircle, Calendar, Clock } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 import Modal from '../components/UI/Modal';
 import { format, parseISO, isSameMinute, addMinutes, parse, isWithinInterval } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+
 const Appointments = () => {
-    const { state, dispatch, userRole, currentUser } = useApp();
+    const { state, dispatch, userRole, currentUser, token } = useApp();
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
@@ -100,7 +100,8 @@ const Appointments = () => {
     const handleRefund = async (id) => {
         if (!confirm('Are you sure you want to refund this payment?')) return;
         try {
-            const payRes = await fetch(`${API_BASE}/appointments/${id}/payment`);
+            const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const payRes = await fetch(`${API_BASE}/appointments/${id}/payment`, { headers: authHeaders });
             const payData = await payRes.json();
             if (!payData.payments || payData.payments.length === 0) {
                  alert("No payments found"); return;
@@ -111,11 +112,14 @@ const Appointments = () => {
                  alert("No valid successful payment to refund."); return;
             }
             
-            const res = await fetch(`${API_BASE}/admin/payments/${validPayment.id}/refund`, { method: 'POST' });
+            const res = await fetch(`${API_BASE}/admin/payments/${validPayment.id}/refund`, {
+                method: 'POST',
+                headers: authHeaders
+            });
             if (res.ok) {
                  alert('Refund successful');
-                 // Simply trigger UI update
-                 window.location.reload(); 
+                 // Update local state instead of full reload
+                 dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: { id, status: 'Pending' } });
             } else {
                  const errData = await res.json();
                  alert('Refund failed: ' + errData.error);
@@ -243,7 +247,7 @@ const Appointments = () => {
                         ))}
                         {sortedAppointments.length === 0 && (
                             <tr>
-                                <td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: 'hsl(var(--text-muted))' }}>
+                                <td colSpan="6" style={{ padding: '3rem', textAlign: 'center', color: 'hsl(var(--text-muted))' }}>
                                     No appointments found.
                                 </td>
                             </tr>

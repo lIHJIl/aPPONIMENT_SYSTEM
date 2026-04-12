@@ -11,7 +11,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api
 const PaymentPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { currentUser, state, dispatch } = useApp();
+    const { currentUser, state, dispatch, token } = useApp();
     const { addToast } = useToast();
     
     const stripe = useStripe();
@@ -146,7 +146,11 @@ const PaymentPage = () => {
         if (!window.confirm("Are you sure you want to cancel? Your reserved slot will be released.")) return;
         
         try {
-            const res = await fetch(`${API_BASE}/appointments/${id}`, { method: 'DELETE' });
+            const url = `${API_BASE}/appointments/${id}?user_id=${currentUser?.id}`;
+            const res = await fetch(url, {
+                method: 'DELETE',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             if (!res.ok) throw new Error('Failed to cancel');
             dispatch({ type: 'DELETE_APPOINTMENT', payload: id });
             addToast('Slot released successfully.', 'info');

@@ -6,7 +6,10 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+const stripePromise = stripeKey && stripeKey.startsWith('pk_')
+  ? loadStripe(stripeKey)
+  : null
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

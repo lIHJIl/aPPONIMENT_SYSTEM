@@ -61,7 +61,7 @@ app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), asy
             db.run(`UPDATE payments SET status = 'succeeded', stripe_charge_id = ? WHERE stripe_payment_intent_id = ?`,
                 [paymentIntent.latest_charge, paymentIntent.id]);
 
-            db.get(`SELECT total_fee, amount_paid FROM appointments WHERE id = ?`, [appointment_id], (err, row) => {
+            db.get(`SELECT total_fee, amount_paid, payment_status FROM appointments WHERE id = ?`, [appointment_id], (err, row) => {
                 if (row) {
                     const newAmountPaid = row.amount_paid + (amount / 100);
                     let newPaymentStatus = row.payment_status;
@@ -300,7 +300,7 @@ app.post('/api/appointments', requireAuth, (req, res) => {
 
 app.use('/api/payments', paymentLimiter);
 
-app.post('/api/payments/create-intent', (req, res) => {
+app.post('/api/payments/create-intent', requireAuth, (req, res) => {
     const { appointment_id, payment_type, amount, user_id } = req.body;
 
     if (!user_id) return res.status(401).json({ error: "Unauthorized" });
@@ -351,7 +351,7 @@ app.post('/api/payments/create-intent', (req, res) => {
     });
 });
 
-app.post('/api/payments/pay-remainder', (req, res) => {
+app.post('/api/payments/pay-remainder', requireAuth, (req, res) => {
     const { appointment_id, user_id } = req.body;
 
     if (!user_id) return res.status(401).json({ error: "Unauthorized" });
@@ -421,7 +421,7 @@ app.put('/api/appointments/:id/status', (req, res) => {
 });
 
 // Admin Refund Endpoint
-app.post('/api/admin/payments/:id/refund', async (req, res) => {
+app.post('/api/admin/payments/:id/refund', requireAuth, requireAdmin, async (req, res) => {
     const paymentId = req.params.id;
     
     db.get(`SELECT * FROM payments WHERE id = ?`, [paymentId], async (err, payment) => {
@@ -537,7 +537,7 @@ app.post('/api/admin/verify', (req, res) => {
     });
 });
 
-app.put('/api/admin/password', async (req, res) => {
+app.put('/api/admin/password', requireAuth, requireAdmin, async (req, res) => {
     const { newPassword } = req.body;
     try {
         const hashed = await hashPassword(newPassword);

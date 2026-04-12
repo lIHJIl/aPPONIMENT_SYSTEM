@@ -12,10 +12,14 @@ const AdminPanel = () => {
         setSettings(state.clinicSettings);
     }, [state.clinicSettings]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        dispatch({ type: 'UPDATE_SETTINGS', payload: settings });
-        alert('Settings saved successfully!');
+        try {
+            await dispatch({ type: 'UPDATE_SETTINGS', payload: settings });
+            alert('Settings saved successfully!');
+        } catch (err) {
+            alert('Failed to save settings: ' + (err?.message || 'Unknown error'));
+        }
     };
 
     return (

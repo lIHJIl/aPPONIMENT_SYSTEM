@@ -6,11 +6,7 @@ const SlotHoldTimer = ({ expiresAt, onExpire }) => {
     useEffect(() => {
         const calculateTime = () => {
             const now = new Date().getTime();
-            // Parse UTC naive properly
-            const distance = new Date(expiresAt.replace(' ', 'T') + 'Z').getTime() - now; 
-            // the server returns ISO, so new Date(expiresAt).getTime() usually works safely
-            const safeDistance = new Date(expiresAt).getTime() - now;
-            return safeDistance;
+            return new Date(expiresAt).getTime() - now;
         };
 
         const initialDist = calculateTime();
